@@ -1,0 +1,45 @@
+<inkscape-extension>
+	<_name>Laser Cutting Optmizer</_name>
+	<id>fr.fablab-lannion.inkscape.cutopimiser</id>
+	<dependency type="executable" location="extensions">CutOptim</dependency>
+	<param name="unit" type="enum" _gui-text="Unit">
+		<_item value="mm">mm</_item>
+		<_item value="cm">cm</_item>
+		<_item value="m">m</_item>
+		<_item value="km">km</_item>
+		<_item value="in">in</_item>
+		<_item value="ft">ft</_item>
+		<_item value="yd">yd</_item>
+		<_item value="pt">pt</_item>
+		<_item value="px">px</_item>
+		<_item value="pc">pc</_item>
+	</param>
+	<param name="distance" type="float" min="0.8" max="10.0" _gui-text="Min distance between objects">2.0</param>
+	<param name="max_length" type="float" min="0" max="1000" _gui-text="Max length of single segment">1000</param>
+	<param name="optimizing_level" type="float" min="1" max="10" _gui-text="Optimizing level">1</param>
+	<param name="original" type="boolean" _gui-text="Keep original layer in output">false</param>
+ 	<param name="firstpos" type="enum" _gui-text="Select option for largest element placement: ">
+		<_item value="TL">Top Left</_item>
+		<_item value="TC">Top Center</_item>
+		<_item value="TR">Top Right</_item>
+		<_item value="CL">Sheet center</_item>
+		<_item value="CC">Center Left</_item>
+		<_item value="CR">Center Right</_item>
+		<_item value="BL">Bottom Left</_item>
+		<_item value="BC">Bottom Center</_item>
+		<_item value="BR">Bottom Right</_item>
+	</param>
+	<param name="free_rot" type="boolean" _gui-text="Allow free rotation of paths, angle parameter not used">true</param>
+	<param name="angle" type="float" min="0" max="180" _gui-text="Try rotation by (0 no rotation allowed)">0</param>
+	<param name="nested" type="boolean" _gui-text="Attach nested path to the bigger one">true</param>
+	<param name="debug_file" type="boolean" _gui-text="Debug file generation">true</param>
+	<effect>
+		<object-type>all</object-type>
+		<effects-menu>
+			<submenu _name="Fablab" />
+		</effects-menu>
+	</effect>
+	<script>
+		<command reldir="extensions">CutOptim</command>
+	</script>
+</inkscape-extension>

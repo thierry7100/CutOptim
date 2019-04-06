@@ -1,0 +1,87 @@
+# depslib dependency file v1.0
+1554279590 source:/home/thierry/Programmes/CutOptim/main.cpp
+	<iostream>
+	"cxxopts.hpp"
+	"SvgDoc.h"
+	"Geometry.h"
+	<math.h>
+	<cmath>
+
+1554135735 source:/home/thierry/Programmes/CutOptim/src/Geometry.cpp
+	"Geometry.h"
+
+1554136169 /home/thierry/Programmes/CutOptim/include/Geometry.h
+	<math.h>
+	<iostream>
+	<vector>
+	<stdlib.h>
+
+1554280994 source:/home/thierry/Programmes/CutOptim/src/SvgDoc.cpp
+	"SvgDoc.h"
+	<iostream>
+	<fstream>
+	<iomanip>
+	<string>
+	<math.h>
+	"Geometry.h"
+	"ConvexHull.h"
+	<cmath>
+
+1554025412 /home/thierry/Programmes/CutOptim/include/SvgDoc.h
+	<cstring>
+	<string>
+	<vector>
+	<list>
+	<ostream>
+	<iostream>
+	<fstream>
+	"nanosvg.h"
+
+1547658309 source:/home/thierry/Programmes/CutOptim/src/SvgPath.cpp
+	"SvgPath.h"
+
+1547660714 /home/thierry/Programmes/CutOptim/include/SvgPath.h
+	"Geometry.h"
+
+1547416001 /home/thierry/Programmes/CutOptim/include/cxxopts.hpp
+	<cstring>
+	<cctype>
+	<exception>
+	<iostream>
+	<map>
+	<memory>
+	<regex>
+	<sstream>
+	<string>
+	<unordered_map>
+	<unordered_set>
+	<vector>
+	<optional>
+	<unicode/unistr.h>
+
+1553091648 /home/thierry/Programmes/CutOptim/include/nanosvg.h
+	"Geometry.h"
+	"CachePosition.h"
+	<string.h>
+	<stdlib.h>
+	<math.h>
+
+1548928589 source:/home/thierry/Programmes/CutOptim/src/ConvexHull.cpp
+	<algorithm>
+	"Geometry.h"
+
+1548837095 /home/thierry/Programmes/CutOptim/include/ConvexHull.h
+
+1552066086 source:/home/thierry/Programmes/CutOptim/src/SavePlacedPiece.cpp
+	"SavePlacedPiece.h"
+
+1552476998 /home/thierry/Programmes/CutOptim/include/SavePlacedPiece.h
+	<unordered_map>
+
+1554279000 source:/home/thierry/Programmes/CutOptim/src/CachePosition.cpp
+	"CachePosition.h"
+	<cstring>
+
+1554030181 /home/thierry/Programmes/CutOptim/include/CachePosition.h
+	"Geometry.h"
+
