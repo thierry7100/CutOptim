@@ -1526,7 +1526,12 @@ Point RefPoint;
                         }
                         OverAll = Hull2BoundingBox(FixedHull);
                         //  Then call Optimize level if the floating list is non empty
-                        OptimizeLevel(WorkingFloatingEntry->LargeConvexHull, tmpFixedList, tmpFloatList, num_rot, StepAngle, tmpFixedArea, tmpHullArea, BestCost, FloatPolygon+1, nbFixedPoly, LevelOptimize - 1);
+                        NSVGpath *Res = OptimizeLevel(WorkingFloatingEntry->LargeConvexHull, tmpFixedList, tmpFloatList, num_rot, StepAngle, tmpFixedArea, tmpHullArea, BestCost, FloatPolygon+1, nbFixedPoly, LevelOptimize - 1);
+                        if ( Res == NULL )
+                        {
+                            //  Placement impossible, make sure that tmpHullArea will be greater than BestCost
+                            tmpHullArea = BestCost + 10;
+                        }
                         //  After return, the tmpHullArea is updated
                         if ( debug_level > 1 )
                         {
@@ -1874,13 +1879,10 @@ int NotPlaced = 0;
             }
         }
 
-        FloatingPaths.pop_front();          //  Remove first in list
-        CurFloating.clear();                //  Erase list before creating new one
-        idxPoly++;
         if ( Flag_file )
         {
             StartLevel = clock();
-            cout << "Polygon " << idxPoly << "  Not placed " << NotPlaced << "  Elapsed time " << ((double)1000.0*(StartLevel - LastLevel))/CLOCKS_PER_SEC << "\n";
+            cout << "FreeRotOptim : Polygon " << idxPoly << "(" << FloatingPaths.front()->id << ")" << "  Not placed " << NotPlaced << "  Elapsed time " << ((double)1000.0*(StartLevel - LastLevel))/CLOCKS_PER_SEC << "\n";
 #if CHECK_MEM > 0
             cout << " mem Poly_empty=" << nbEmptyPoly << "/" << nbCreatedEmptyPoly <<  " mem Poly_Vector=" << nbVectorPoly << "/" << nbCreatedVectorPoly;
             cout <<  " Rot_Poly=" << nbRotatedPoly << "/" << nbCreatedRotatedPoly;
@@ -1890,6 +1892,9 @@ int NotPlaced = 0;
             cout << "\n";
 #endif
         }
+        FloatingPaths.pop_front();          //  Remove first in list
+        CurFloating.clear();                //  Erase list before creating new one
+        idxPoly++;
     }
     if ( debug_level > 0 )
     {
@@ -1968,8 +1973,7 @@ Point RefPoint;
     //  And remove element from temporary floating list
     CurFloating.pop_front();
     BestCost = 1e100;          //  Very large, each try should be better
-    BestAngle = -100;            //   Impossible value
-
+    BestAngle = -500;            //   Impossible value
     if ( debug_level > 1 )
     {
         OutDebug << "Polygon to be placed : " << WorkingFloatingEntry->id << "  has " << WorkingFloatingEntry->LargePolygon->nVertices << " vertices.\n";
@@ -2138,7 +2142,12 @@ Point RefPoint;
                         }
                         OverAll = Hull2BoundingBox(FixedHull);
                         //  Then call Optimize level if the floating list is non empty
-                        OptimizeLevelFreeRot(WorkingFloatingEntry->LargeConvexHull, tmpFixedList, tmpFloatList, tmpFixedArea, tmpHullArea, BestCost, FloatPolygon+1, nbFixedPoly, LevelOptimize - 1);
+                        NSVGpath *Res = OptimizeLevelFreeRot(WorkingFloatingEntry->LargeConvexHull, tmpFixedList, tmpFloatList, tmpFixedArea, tmpHullArea, BestCost, FloatPolygon+1, nbFixedPoly, LevelOptimize - 1);
+                        if ( Res == NULL )
+                        {
+                            //  Not possible, make sure that tmpHullArea will be greater than BestCost
+                            tmpHullArea = BestCost + 10;
+                        }
                         //  After return, the tmpHullArea is updated
                         if ( debug_level > 1 )
                         {
@@ -2213,8 +2222,15 @@ Point RefPoint;
         for (std::list<NSVGpath *>::iterator it=CurFloating.begin(); it != CurFloating.end() ; ++it, idx_list++)
         {
             NSVGpath  *lPath = *it;
-            OutDebug << " Element " << idx_list << ": Translation=" << lPath->PlacedPolygon->getTranslation() << " rot=" << round(lPath->PlacedPolygon->getRotation()*180/M_PI) ;
-            OutDebug << " Hull area=" << lPath->LargeConvexHull->area() << "\n";
+            if ( lPath->PlacedPolygon == NULL )
+            {
+                OutDebug << "Element " << idx_list << "Not placed\n";
+            }
+            else
+            {
+                OutDebug << " Element " << idx_list << ": Translation=" << lPath->PlacedPolygon->getTranslation() << " rot=" << round(lPath->PlacedPolygon->getRotation()*180/M_PI) ;
+                OutDebug << " Hull area=" << lPath->LargeConvexHull->area() << "\n";
+            }
         }
     }
     return WorkingFloatingEntry;
