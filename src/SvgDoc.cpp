@@ -264,23 +264,63 @@ void SvgDoc::TransformPaths(double flat_factor, bool KeepNested)
     if ( SvgData == NULL ) return;
     if ( debug_level > 0 )
     {
-        OutDebug << "Entering TransformPaths\n";
+        OutDebug << "Entering TransformPaths\n" << std::flush;
     }
 	for (NSVGshape *shape = SvgData->shapes; shape != NULL; shape = shape->next, nShape++)
 	{
         nPath = 0;
         if ( debug_level > 0 )
         {
-            OutDebug << "Shape " << nShape << " id:" << shape->id << " Stroke[" << (int) shape->stroke.type << " " << setw(6) << setfill('0') << std::hex << (shape->stroke.color&0xFFFFFF) << std::dec << "] width:" << shape->strokeWidth << "\n";
+            OutDebug << "Shape " << nShape << " id:" << shape->id << " Stroke[" << (int) shape->stroke.type << " " << setw(6) << setfill('0') << std::hex << (shape->stroke.color&0xFFFFFF) << std::dec << "] width:" << shape->strokeWidth << "\n" << std::flush;
         }
         //  Transform each path to a polygon
 		for (NSVGpath *path = shape->paths; path != NULL; path = path->next, nPath++)
 		{
             snprintf(path->id, 99, "%s_%d", shape->id, nPath);
             path->id[99] = 0;
+            //  Walk through the path and delete vertices which have trange coordinates (nan)
+            //  This has been observed in some cases.
+            //  Indeed vertices are very close in these cases, so it is safe to remove vertex with nan coordinates.
+            //  However, this can't be the first one.
+            int StrangeControlPoints = 0;
+            int StrangeEndPoints = 0;
+            NSVGPathElt *Elt = path->PathElts;
+            NSVGPathElt *PrevElt = NULL;
+            for (int i = 0; i < path->nElts; i++)
+            {
+                int ShouldDelete = 0;
+                if ( isnan(Elt->EndX) || isnan(Elt->EndY) )
+                {
+                    StrangeEndPoints++;
+                    ShouldDelete = 1;
+                }
+                if ( isnan(Elt->BzCtrl1X) || isnan(Elt->BzCtrl1Y) || isnan(Elt->BzCtrl2X) || isnan(Elt->BzCtrl2Y) )
+                {
+                    StrangeControlPoints++;
+                    ShouldDelete = 1;
+                }
+                if ( ShouldDelete )
+                {
+                    if ( PrevElt == NULL )
+                    {
+                        if ( debug_level > 0 )OutDebug << "nan encoutered as first element in path, aborting\n";
+                        cerr << "nan encoutered as first element in path, aborting\n";
+                        exit(1);
+                    }
+                    //  Remove vertex
+                    path->nElts--;
+                    PrevElt->next = Elt->next;
+                    Elt = Elt->next;
+                    continue;
+                }
+                PrevElt = Elt;
+                Elt = Elt->next;
+            }
+
             if ( debug_level > 2)
             {
                 OutDebug << "Before Transform path, Shape " << nShape << " Path " << nPath << " with " << path->nElts << " HasBezier:" << path->hasBezier << "\n";
+                OutDebug << "Path has " << StrangeEndPoints << " StrangeEndPoints and "<< StrangeControlPoints << " StrangeControlPoints (removed)\n";
                 OutDebug << "Starting point=" << path->StartX << "," << path->StartY << "\n";
                 OutDebug << "  Bounds (" << path->bounds[0] << "," << path->bounds[1] << ") --> (" << path->bounds[2] << "," << path->bounds[3] << "\n";
                 NSVGPathElt *Elt = path->PathElts;
@@ -290,6 +330,7 @@ void SvgDoc::TransformPaths(double flat_factor, bool KeepNested)
                     OutDebug << ")  Control points (" << Elt->BzCtrl1X << "," << Elt->BzCtrl1Y << ") and (" << Elt->BzCtrl2X << "," <<  Elt->BzCtrl2Y << ")\n";
                     Elt = Elt->next;
                 }
+                OutDebug << std::flush;
             }
 			if ( path->closed == 0 )
 			{
@@ -345,6 +386,8 @@ void SvgDoc::TransformPaths(double flat_factor, bool KeepNested)
                 path->ClosePolygon->Reverse();
             }
 		}
+		if ( debug_level > 0)
+            OutDebug << std::flush;
 	}
 	if ( KeepNested )
 	{
@@ -371,6 +414,11 @@ void SvgDoc::TransformPaths(double flat_factor, bool KeepNested)
             }
         }
 	}
+    if ( debug_level > 0 )
+    {
+        OutDebug << "End of Transform paths\n" << std::flush;
+    }
+
 }
 
 //  If a path is included in an other one, remove this path for the primary list and move it to the child list of the large path
@@ -450,6 +498,11 @@ void SvgDoc::EnlargePaths(double Diff)
         //  Transform each path to a polygon
 		for (NSVGpath *path = shape->paths; path != NULL; path = path->next, nPath++)
 		{
+            if ( path->ClosePolygon == NULL )
+            {
+                OutDebug << " Shape " << shape->id << " Index " << nShape << " Path " << nPath << " has no closed polygon, skipping large polygon generation\n";
+                continue;
+            }
             path->LargePolygon = path->ClosePolygon->enlarge(Diff);
             path->LargePolygon->Simplify(Diff*Diff/5);
             if ( debug_level > 1 )
@@ -460,7 +513,7 @@ void SvgDoc::EnlargePaths(double Diff)
 	}
     if ( debug_level > 0 )
     {
-        OutDebug << "---------------- Exit EnlargePaths, elapsed time: " <<  1000.0*(clock() - StartClock)/CLOCKS_PER_SEC << "ms\n\n\n";
+        OutDebug << "---------------- Exit EnlargePaths, elapsed time: " <<  1000.0*(clock() - StartClock)/CLOCKS_PER_SEC << "ms\n\n\n" << std::flush;
     }
 }
 
@@ -484,6 +537,11 @@ void SvgDoc::BreakLongerEdges(double max_length, double Diff)
         //  Transform each large polygon to add vertices when edges are too long
 		for (NSVGpath *path = shape->paths; path != NULL; path = path->next, nPath++)
 		{
+            if ( path->LargePolygon == NULL )
+            {
+                OutDebug << " Shape " << shape->id << " Index " << nShape << " Path " << nPath << " has no large polygon\n";
+                continue;
+            }
             path->LargePolygon->BreakLongerEdges(max_length, Diff);
             if ( debug_level > 1 )
             {
@@ -493,7 +551,7 @@ void SvgDoc::BreakLongerEdges(double max_length, double Diff)
 	}
     if ( debug_level > 0 )
     {
-        OutDebug << "---------------- Exit BreakLongerEdges, elapsed time: " <<  1000.0*(clock() - StartClock)/CLOCKS_PER_SEC << "ms\n\n\n";
+        OutDebug << "---------------- Exit BreakLongerEdges, elapsed time: " <<  1000.0*(clock() - StartClock)/CLOCKS_PER_SEC << "ms\n\n\n" << std::flush;
     }
 }
 
@@ -949,6 +1007,7 @@ void SvgDoc::BuilSingleListPath()
         {
             path->isFixed = 0;              //  Not yet fixed !
             path->CachePoly = NULL;         //  No cache associated yet
+            if ( path->LargePolygon == NULL ) continue;     //  Do NOT Add to list if no large polygon
             listPath.push_back(path);
         }
     }
