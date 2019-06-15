@@ -375,7 +375,7 @@ void SvgDoc::TransformPaths(double flat_factor, bool KeepNested)
             Path2Polygon(path->ClosePolygon, path->PolyLine);
             if ( debug_level > 1 )
             {
-                OutDebug << "Adding polygon " << nPath << " with " << path->ClosePolygon->nVertices << " vertices, area:" << path->ClosePolygon->area() << "mm²\n";
+                OutDebug << "Adding polygon " << nPath << " new name " << path->id << " with " << path->ClosePolygon->nVertices << " vertices, area:" << path->ClosePolygon->area() << "mm²\n";
             }
             if ( path->ClosePolygon->isClockWise() )
             {
@@ -435,11 +435,15 @@ int SvgDoc::RemoveIfIncluded(NSVGpath *Inpath, NSVGshape *Inshape, NSVGpath *Old
 		{
             if ( path->ClosePolygon != NULL && Inpath->ClosePolygon != NULL )
             {
+                if ( nShapeIn == 0 && nPathIn == 1 && nShape== 0 && nPath == 2 )
+                {
+                    OutDebug << "Inpath->ClosePolygon->Poly_in_Poly(path->ClosePolygon) returns " << Inpath->ClosePolygon->Poly_in_Poly(path->ClosePolygon) << " \n";
+                }
                 if ( Inpath->ClosePolygon->Poly_in_Poly(path->ClosePolygon) )
                 {
                     if ( debug_level > 0 )
                     {
-                        OutDebug << "Shape_" << nShapeIn << "/Path_" << nPathIn << " is included in Shape" << nShape << "/Path" << nPath << "\n";
+                        OutDebug << "Shape_" << nShapeIn << "/Path_" << nPathIn << "(" << Inpath->id << ") is included in " << path->id << "\n";
                     }
                     //  First, remove from primary list
                     if ( OldPath )
@@ -464,7 +468,7 @@ int SvgDoc::RemoveIfIncluded(NSVGpath *Inpath, NSVGshape *Inshape, NSVGpath *Old
                     }
                     if ( debug_level > 1 )
                     {
-                        OutDebug << "Shape " << nShape << "/Path" << nPath << " has " << NbChildren(path) << " children\n";
+                        OutDebug << path->id << " has " << NbChildren(path) << " children\n";
                     }
                     return 1;
                 }
@@ -500,14 +504,22 @@ void SvgDoc::EnlargePaths(double Diff)
 		{
             if ( path->ClosePolygon == NULL )
             {
-                OutDebug << " Shape " << shape->id << " Index " << nShape << " Path " << nPath << " has no closed polygon, skipping large polygon generation\n";
+                OutDebug << path->id << " has no closed polygon, skipping large polygon generation\n";
                 continue;
             }
+            if ( debug_level > 1 )
+            {
+                OutDebug << path->id << " before elarging polygon with " << path->ClosePolygon->nVertices << " vertices and area " << path->ClosePolygon->area() << "mm²\n" << std::flush;
+            }
             path->LargePolygon = path->ClosePolygon->enlarge(Diff);
+            if ( debug_level > 1 )
+            {
+                OutDebug << path->id << " before simplify large polygon with " << path->LargePolygon->nVertices << " vertices and area " << path->LargePolygon->area() << "mm²\n" << std::flush;
+            }
             path->LargePolygon->Simplify(Diff*Diff/5);
             if ( debug_level > 1 )
             {
-                OutDebug << " Shape " << shape->id << " Index " << nShape << " Path " << nPath << " Large polygon with " << path->LargePolygon->nVertices << " vertices and area " << path->LargePolygon->area() << "mm²\n";
+                OutDebug << path->id << " after simplify large polygon with " << path->LargePolygon->nVertices << " vertices and area " << path->LargePolygon->area() << "mm²\n" << std::flush;
             }
 		}
 	}
@@ -737,7 +749,7 @@ void SvgDoc::WritePolygonLayer(ostream& Out)
                 Out << " z";
 			}
 			Out << "\"" << endl;
-            Out << "       id=\"poly_" << shape->id << "_" << iPath << "\"" << endl;
+            Out << "       id=\"poly_" << path->id << "\"" << endl;
             Out << "       inkscape:connector-curvature=\"0\" />" << endl;
         }
     }
@@ -913,7 +925,7 @@ void SvgDoc::WriteHeader(ostream &Out)
     Out << "<svg\n";
     Out << "   xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n";
     Out << "   xmlns:cc=\"http://creativecommons.org/ns#\"\n";
-    Out << "   xmlns:rdf=\"  http://www.w3.org/1999/02/22-rdf-syntax-ns#\"\n";
+    Out << "   xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\"\n";
     Out << "   xmlns:svg=\"http://www.w3.org/2000/svg\"\n";
     Out << "   xmlns=\"http://www.w3.org/2000/svg\"\n";
     Out << "   xmlns:sodipodi=\"http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd\"\n";
