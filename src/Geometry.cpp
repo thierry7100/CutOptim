@@ -352,6 +352,8 @@ double a, b, c;
         printf("Vertex %d : (%.3f,%.3f)\n", v, LargePoly->_Vertices[v].x, LargePoly->_Vertices[v].y);
     }
 #endif
+    //  After this step, remove vertices which are inside the polygon.
+    //  The edges should never intersect
     int modified = true;
     Point Intersection;
     while ( modified )
@@ -374,16 +376,56 @@ double a, b, c;
                                 j, LargePoly->_Vertices[j].x, LargePoly->_Vertices[j].y, LargePoly->_Vertices[j+1].x, LargePoly->_Vertices[j+1].y);
                     printf("Changing end of segment to intersection point (%.3f,%.3f)\n", Intersection.x, Intersection.y);
 #endif
-                    LargePoly->_Vertices[i+1] = Intersection;
-                    //  Now remove vertices between i+2 and j
-                    //  Begin from end to keep consistent indexes
-                    while ( j > i+1 )
+                //  Build 2 polygons, first one contains segments between i+1 (modified to intersection) and j also modified as intersection
+                //  The second one contains all other points
+                    Polygon *Poly1 = new Polygon;
+                    Polygon *Poly2 = new Polygon;
+                    for ( int k = 0; k < newVertices; k++)
+                    {
+                        if ( k < i || k > j )
+                        {
+                            Poly1->addVertice(LargePoly->_Vertices[k]);
+                        }
+                        else if ( k == i )
+                        {
+                            Poly1->addVertice(LargePoly->_Vertices[k]);
+                            Poly1->addVertice(Intersection);
+                        }
+                        else if ( k == i+1 )
+                        {
+                            Poly2->addVertice(Intersection);
+                            Poly2->addVertice(LargePoly->_Vertices[k]);
+                        }
+                        else if ( k < j )
+                        {
+                            Poly2->addVertice(LargePoly->_Vertices[k]);
+                        }
+                        else
+                        {
+                            Poly2->addVertice(LargePoly->_Vertices[k]);
+                            Poly2->addVertice(Intersection);
+                        }
+                    }
+                    //  Keep the largest one
+                    double area1 = fabs(Poly1->area());
+                    double area2 = fabs(Poly2->area());
+                    if ( area1 > area2 )
                     {
 #if DEBUG_CONSOLE > 0
-                        printf("Deleting vertex %d (%.3f,%.3f) from polygon\n", j, _Vertices[j].x, _Vertices[j].y);
+                        printf("Area1 = %.3f, Area2 = %.3f, keep polygon1", area1, area2);
 #endif
-                        LargePoly->delVertex(j);
-                        j--;
+                        delete Poly2;
+                        delete LargePoly;
+                        LargePoly = Poly1;
+                    }
+                    else
+                    {
+#if DEBUG_CONSOLE > 0
+                        printf("Area1 = %.3f, Area2 = %.3f, keep polygon2", area1, area2);
+#endif
+                        delete Poly1;
+                        delete LargePoly;
+                        LargePoly = Poly2;
                     }
                     newVertices = LargePoly->_Vertices.size();
                     modified = true;
@@ -499,13 +541,23 @@ int inside = false;
     {
         double curX = _Vertices[i].x;
         double curY = _Vertices[i].y;
-        if (!(lP.y < lastY && lP.y < curY))           //   Not below segment so intersect is possible
+        //  Note the <= comparison with last Y, to avoid double counting when line intersect edge at the vertex.
+        if (!(lP.y <= lastY && lP.y < curY))           //   Not below segment so intersect is possible
         {
-            if (!(lP.y > lastY && lP.y > curY))       //  not Above current segment so intersect is possible
+            if (!(lP.y >= lastY && lP.y > curY))       //  not Above current segment so intersect is possible
             {
                 if ( !(lP.x > lastX && lP.x > curX))  //  Not after current segment, so intersect is possible
                 {
-                    if ( curY != lastY)         //  Only if segment is not horizontal
+                    if (curY == lP.y)                   //  Intersect at vertex ?
+                    {
+                        //  In this case intersect only if curY-LastY has the same sign as nextY-curY
+                        double sign = -1;
+                        if ( i < nVertices - 1)
+                            sign = (curY - lastY) * (_Vertices[i+1].y - curY);
+                        if ( sign > 0 && lP.x <= curX )
+                            inside = !inside;
+                    }
+                    else if ( curY != lastY)         //  Only if segment is not horizontal
                     {
                         double intersect = lastX + (lP.y - lastY) * (curX - lastX) / (curY - lastY);
                         if ( lP.x <= intersect )
@@ -813,6 +865,7 @@ int hasSimplify = 1;
     while ( hasSimplify )
     {
         hasSimplify = 0;
+        if ( nVertices == 3 ) break;    //  Not able to remove one more vertex
         //  Now walk through all path elements to delete vertices if they are aligned
         for ( int i = nVertices-2; i > 0; i--)
         {
@@ -858,7 +911,8 @@ int Polygon::Poly_in_Poly(Polygon *Big)
     //  True algoritm, check all vertices
     for ( int i = 0; i < nVertices; i++)
     {
-        if ( ! Big->isInPoly(&_Vertices[i])) return false;           //  Vertex i is not in Big, not included !
+        if ( ! Big->isInPoly(&_Vertices[i]))
+            return false;           //  Vertex i is not in Big, not included !
     }
     return true;
 }
