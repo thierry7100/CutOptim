@@ -612,7 +612,7 @@ SvgDoc::~SvgDoc()
         OutDebug.close();
 }
 
-void SvgDoc::WritePath(ostream &Out, NSVGpath *path, NSVGshape *shape, int iPath)
+void SvgDoc::WritePath(ostream &Out, NSVGpath *path, NSVGshape *shape)
 {
     Out << "    <path" << endl;
     //  Line style from SVG file
@@ -636,15 +636,19 @@ void SvgDoc::WritePath(ostream &Out, NSVGpath *path, NSVGshape *shape, int iPath
         Out << " z";
     }
     Out << "\"" << endl;
-    Out << "       id=\"" << shape->id << "_" << iPath << "\"" << endl;
+    Out << "       id=\"" << path->id << "\"" << endl;
     Out << "       inkscape:connector-curvature=\"0\" />" << endl;
 }
 
-void SvgDoc::WritePlacedPath(ostream &Out, NSVGpath *ref_path, NSVGpath *out_path, NSVGshape *shape, int iPath)
+void SvgDoc::WritePlacedPath(ostream &Out, NSVGpath *ref_path, NSVGpath *out_path, NSVGshape *shape, int hasgroup)
 {
+    if (hasgroup)
+        Out << "   ";
     Out << "    <path" << endl;
     //  Line style from SVG file
     Out << std::hex;
+    if (hasgroup)
+        Out << "   ";
     Out << "       style=\"fill:none;stroke:#" << setw(6) << setfill('0') << std::hex << (shape->stroke.color&0xFFFFFF);
     Out << std::dec;
     Out << ";stroke-width:" << shape->strokeWidth << "\"" << endl;
@@ -655,6 +659,8 @@ void SvgDoc::WritePlacedPath(ostream &Out, NSVGpath *ref_path, NSVGpath *out_pat
     //  Then write path
     Point Start = Point(out_path->StartX, out_path->StartY);
     Start.Transform(angle, Centroid, PtTrans);
+    if ( hasgroup )
+        Out << "   ";
     Out << "       d=\"M " << Start.x << "," << Start.y;
     NSVGPathElt *Elt = out_path->PathElts;
     for (int i = 0; i < out_path->nElts; i++)
@@ -682,7 +688,11 @@ void SvgDoc::WritePlacedPath(ostream &Out, NSVGpath *ref_path, NSVGpath *out_pat
         Out << " z";
     }
     Out << "\"" << endl;
-    Out << "       id=\"Placed_" << shape->id << "_" << iPath << "\"" << endl;
+    if ( hasgroup )
+        Out << "   ";
+    Out << "       id=\"Placed_" << out_path->id << "\"" << endl;
+    if ( hasgroup )
+        Out << "   ";
     Out << "       inkscape:connector-curvature=\"0\" />" << endl;
 }
 void SvgDoc::WriteOrginalLayer(ostream& Out)
@@ -702,11 +712,10 @@ void SvgDoc::WriteOrginalLayer(ostream& Out)
         int iPath = 0;
         for (NSVGpath *path = shape->paths; path != NULL; path = path->next, iPath++)
         {
-            WritePath(Out, path, shape, iPath);       //  Write path itself.
-            int iChild = 10000 - iPath * 100 - 1;
-            for ( NSVGpath *path_child = path->child; path_child != NULL; path_child = path_child->next, iChild--)
+            WritePath(Out, path, shape);       //  Write path itself.
+            for ( NSVGpath *path_child = path->child; path_child != NULL; path_child = path_child->next)
             {
-                WritePath(Out, path_child, shape, iChild);
+                WritePath(Out, path_child, shape);
             }
 
         }
@@ -903,12 +912,22 @@ void SvgDoc::WritePlacedLayer(ostream& Out)
         int iPath = 0;
         for (NSVGpath *path = shape->paths; path != NULL; path = path->next, iPath++)
         {
-            if ( path->PlacedPolygon == NULL ) continue;
-            WritePlacedPath(Out, path, path, shape, iPath);
-            int iChild = 10000 - iPath * 100 - 1;
-            for ( NSVGpath *path_child = path->child; path_child != NULL; path_child = path_child->next, iChild--)
+            int hasgroup = 0;
+            if ( path->PlacedPolygon == NULL ) continue;        //  Not placed, skip this one
+            if ( path->child != NULL )          //  There is at least one child, build a group
             {
-                WritePlacedPath(Out, path, path_child, shape, iChild);
+                Out << "    <g\n";
+                Out << "       id=\"group_" << shape->id << "\">\n";
+                hasgroup = 1;
+            }
+            WritePlacedPath(Out, path, path, shape, hasgroup);
+            for ( NSVGpath *path_child = path->child; path_child != NULL; path_child = path_child->next)
+            {
+                WritePlacedPath(Out, path, path_child, shape, 1);
+            }
+            if ( hasgroup )
+            {
+                Out << "    </g>\n";
             }
         }
     }
