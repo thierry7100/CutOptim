@@ -46,8 +46,8 @@ class SvgDoc
         void  WritePlacedPolygonLayer(ostream& Out);
         void  WritePlacedLayer(ostream& Out);
         void  WriteHeader(ostream& Out);
-        void  WritePath(ostream &Out, NSVGpath *path, NSVGshape *shape, int iPath);
-        void  WritePlacedPath(ostream &Out, NSVGpath *ref_path, NSVGpath *out_path, NSVGshape *shape, int iPath);
+        void  WritePath(ostream &Out, NSVGpath *path, NSVGshape *shape);
+        void  WritePlacedPath(ostream &Out, NSVGpath *ref_path, NSVGpath *out_path, NSVGshape *shape, int hasgroup);
         void  WriteFile(ostream &Out, int output_layers);
         Polygon *PlaceFirst(Polygon *p, int FirstPos, double StepAngle);
         int PlacementNotPossible(Polygon *CurPoly, std::list<NSVGpath *> FixedPath, Rectangle *OverAll, const Point *RefPoint, int Cached);
