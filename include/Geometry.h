@@ -7,7 +7,7 @@
 #include <stdlib.h>
 using namespace std;
 
-const double my_Default_Precision = 1e-6;
+const double my_Default_Precision = 1e-2;
 const double angle_precision = 1e-6;
 
 enum PositionType {
@@ -147,6 +147,10 @@ class Rectangle
     Point A, B;
 };
 
+/**
+*   This simple class deals with lines.
+*   A line is represented by its equation a.x + b.y + c = 0
+*/
 class Line
 {
     protected:
@@ -166,16 +170,27 @@ class Line
             c = 0;
         }
 
+        /**
+        *   Return the square of distance from the point p to the line itself.
+        */
         inline double sqrDistancePoint(Point &p) const
         {
             return((a * p.x + b * p.y + c)*(a * p.x + b * p.y + c)/(a*a + b*b));
         }
+
+        /**
+        * Return the square of distance from the point p to the line itself, same as previous one but add the square root computation
+        */
 
         inline double DistancePoint(Point &p) const
         {
             return(fabs(a * p.x + b * p.y + c)/sqrt(a*a + b*b));
         }
 
+        /**
+        *   Compute the intersection poi t between 2 lines.
+        *   If lines are parallel, return the Point (nan, nan)
+        */
         inline Point Intersect(const Line &Line2) const
         {
             double det = Line2.a * b - a*Line2.b;
@@ -186,6 +201,10 @@ class Line
             return(Point((Line2.b*c - Line2.c*b)/det, (a*Line2.c - Line2.a*c)/det));
         }
 
+        /**
+        *   Return true if the line intersects with Line2
+        *   If the intersection exists, update the intersection Point
+        */
         inline bool hasIntersect(const Line *Line2, Point &ResIntersect) const
         {
             double det = Line2->a * b - a*Line2->b;
@@ -198,6 +217,9 @@ class Line
         }
 };
 
+/**
+*   This class is derived from line, but adds two ends
+*/
 class Segment:Line
 {
     protected:
@@ -248,7 +270,16 @@ class Segment:Line
             b = xB - xA;
             c = xA*yB - xB*yA;
         }
-        //  Return true if point p is in segment. p should be on the line
+
+        // Compute segment size
+        inline double SegmentSize()
+        {
+            return(sqrt((xA-xB)*(xA-xB) + (yA-yB)*(yA-yB)));
+        }
+
+        /**
+         * Return true if point p is in segment. p should be on the line
+        */
         inline int InSegment(Point &p) const
         {
             if ( p.x < xm ) return 0;     //  Impossible lower than xmin
@@ -258,7 +289,10 @@ class Segment:Line
             return(1);      //  OK
         }
 
-        //  Return true if point p is in segment. p should be on the line, segment ends are not taken into account
+        /**
+        *  Return true if point p is in segment. p should be on the line, segment ends are not taken into account
+        *   So return false if the point is an end.
+        */
         inline int InSegmentNoEnd(Point &p) const
         {
             if ( p.x < xm ) return 0;     //  Impossible lower than xmin
@@ -271,7 +305,7 @@ class Segment:Line
             double d2 = fabs(p.x - xB) + fabs(p.y - yB);
             if ( d2 < 2*my_Default_Precision) return 0;                       //  End of segment return 0
             return(1);      //  OK
-}
+        }
 
         inline double sqrDistancePoint(const Point &p) const
         {
@@ -286,26 +320,52 @@ class Segment:Line
             double d1 = (a * p.x + b * p.y + c)*(a * p.x + b * p.y + c)/(a*a + b*b);
             return d1;
         }
-        //  Check if segment cross segment s1
-        //  In any case, set ResIntersect to the point ofintesecion of the two lines
+        //  Check if segment this  cross segment s1
+        //  In any case, set ResIntersect to the point of intersection of the two lines
         //  If this point belongs to the 2 segments, return true
-        inline int isCrossing(const Segment *s1, Point *ResIntersect)
+        //  If one segment is included in another, set the bool IncludedSegment but return false
+        inline int isCrossing(const Segment *s1, Point *ResIntersect, bool *IncludedSegment=nullptr)
         {
             Point Ai;
-            if ( !hasIntersect(s1, Ai) ) return 0;     // No intersection,
+            if ( IncludedSegment != nullptr ) *IncludedSegment = false;     //  Set default answer
+            if ( !hasIntersect(s1, Ai) )
+            {
+                //  Check if same segment (same line...)
+                if ( IncludedSegment != nullptr && fabs(s1->a - a) < my_Default_Precision && fabs(s1->b - b) < my_Default_Precision && fabs(s1->c - c) < my_Default_Precision )
+                    *IncludedSegment = true;
+                return 0;     // No intersection,
+            }
             if ( ResIntersect != NULL) *ResIntersect = Ai;
             return InSegment(Ai) && s1->InSegment(Ai);
         }
-        //  Check if segment cross segment s1
-        //  In any case, set ResIntersect to the point ofintesecion of the two lines
+        //  Check if segment this  cross segment s1
+        //  In any case, set ResIntersect to the point of intersection of the two lines
         //  If this point belongs to the 2 segments, return true
-        inline int isCrossingNoEnd(const Segment *s1, Point *ResIntersect) const
+        //  If one segment is included in another, set the bool IncludedSegment but return false
+        inline int isCrossingNoEnd(const Segment *s1, Point *ResIntersect, bool *IncludedSegment=nullptr) const
         {
             Point Ai;
-            if ( !hasIntersect(s1, Ai) ) return 0;     // No intersection,
+            if ( IncludedSegment != nullptr ) *IncludedSegment = false;     //  Set default answer
+            if ( !hasIntersect(s1, Ai) )
+            {
+                //  Check if same segment (same line...), that is A point of this is on s1
+                if ( IncludedSegment != nullptr && fabs(s1->a*xA + s1->b*yA  + s1->c) < my_Default_Precision )
+                    *IncludedSegment = true;
+                return 0;     // No intersection,
+            }
             if ( ResIntersect != NULL) *ResIntersect = Ai;
             return InSegmentNoEnd(Ai) && s1->InSegmentNoEnd(Ai);
         }
+
+    /*
+		Overloaded ostream << operator to check for print object of class point to STDOUT
+	*/
+	friend ostream& operator<<(ostream& output,const Segment& Seg)
+	{
+		output<<"Segment("<<Seg.xA<<","<<Seg.yA<<") to " << Seg.xB << "," << Seg.yB << ") )";
+		return output;
+	}
+
 };
 
 enum PolyType {
@@ -338,7 +398,7 @@ class Polygon
         {
             return poly_closed;
         }
-        int isInPoly(const Point *p);
+        int isInPoly(const Point *p, int *SegmentIdx = NULL);
         int Poly_in_Poly(Polygon *Big);
 
         Rectangle GetBoundingBox();
@@ -351,6 +411,7 @@ class Polygon
         Point getCentroid();
         inline Point *GetVertex(int idx) { return(&_Vertices[idx]); }
         inline vector<Point> GetVertices() { return _Vertices;}
+        inline Segment GetSegment(int idx) { return(_Segments[idx]);}
         inline int CheckClosed() { if (_Vertices[0] == _Vertices[nVertices-1]) poly_closed = 1; else poly_closed = 0; return poly_closed; }
         Polygon *ConvexHull();
         Polygon *Translate(const Point *pT, int idx_vertex);
