@@ -898,12 +898,12 @@ bool ShareSegment = false;      //  If true, one segment is included in another
                 Point ptB1 = pSeg2->getPointB();
                 Point ptA2 = _Segments[j].getPointA();
                 Point ptB2 = _Segments[j].getPointB();
-                if ( _Segments[i].InSegmentNoEnd(ptA1) )
+                if ( _Segments[j].InSegmentNoEnd(ptA1) )
                 {
                     //cout << "Shared point A of " << *pSeg2 << " in " << _Segments[j] << " with same rotation side\n";
                     return true;
                 }
-                if ( _Segments[i].InSegmentNoEnd(ptB1) )
+                if ( _Segments[j].InSegmentNoEnd(ptB1) )
                 {
                     //cout << "Shared point B of " << *pSeg2 << " in " << _Segments[j] << " with same rotation side\n";
                     return true;
