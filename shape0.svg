@@ -1,0 +1,352 @@
+﻿<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="150mm"
+   height="110mm"
+   viewBox="0 0 150 110"
+   version="1.1"
+   id="svg8"
+   inkscape:version="1.0.1 (3bc2e813f5, 2020-09-07)"
+   sodipodi:docname="test04.svg">
+  <defs
+     id="defs2" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="2.8"
+     inkscape:cx="273.495"
+     inkscape:cy="126.16604"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer1"
+     inkscape:document-rotation="0"
+     showgrid="false"
+     inkscape:window-width="1920"
+     inkscape:window-height="1017"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1" />
+  <metadata
+     id="metadata5">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="图层 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <polygon
+       fill="none"
+       stroke="#010101"
+       stroke-miterlimit="10"
+       points="10,10 12,10 12,13 22,13 22,10 24,10 24,15 10,15"
+       id="polygon5" />
+    <polygon
+       fill="none"
+       stroke="#010101"
+       stroke-miterlimit="10"
+       points="12,24 18,18 24,24 18,30"
+       id="polygon7" />
+    <polygon
+       fill="none"
+       stroke="#010101"
+       stroke-miterlimit="10"
+       points="10,35 16,35 16,33 17,33 21,37 21,39 18,39 18,36 12,36 12,40 10,40"
+       id="polygon9" />
+    <polygon
+       fill="none"
+       stroke="#010101"
+       stroke-miterlimit="10"
+       points="10,47 12,47 12,45 14,45 14,47 16,47 16,49 14,49 14,51 12,51 12,49 10,49"
+       id="polygon11" />
+    <polygon
+       fill="none"
+       stroke="#010101"
+       stroke-miterlimit="10"
+       points="24,10 24,15 10,15 10,10 12,10 12,13 22,13 22,10 "
+       id="polygon5-5"
+       transform="translate(57.177827,-0.12127978)" />
+    <polygon
+       fill="none"
+       stroke="#010101"
+       stroke-miterlimit="10"
+       points="24,10 24,15 10,15 10,10 12,10 12,13 22,13 22,10 "
+       id="polygon5-1"
+       transform="translate(39.318452,0.25669641)" />
+    <polygon
+       fill="none"
+       stroke="#010101"
+       stroke-miterlimit="10"
+       points="24,10 24,15 10,15 10,10 12,10 12,13 22,13 22,10 "
+       id="polygon5-3"
+       transform="translate(22.026042,0.16220234)" />
+    <polygon
+       fill="none"
+       stroke="#010101"
+       stroke-miterlimit="10"
+       points="24,10 24,15 10,15 10,10 12,10 12,13 22,13 22,10 "
+       id="polygon5-4"
+       transform="translate(22.120536,8.6666667)" />
+    <polygon
+       fill="none"
+       stroke="#010101"
+       stroke-miterlimit="10"
+       points="24,10 24,15 10,15 10,10 12,10 12,13 22,13 22,10 "
+       id="polygon5-30"
+       transform="translate(74.753721,0.63467264)" />
+    <polygon
+       fill="none"
+       stroke="#010101"
+       stroke-miterlimit="10"
+       points="24,10 24,15 10,15 10,10 12,10 12,13 22,13 22,10 "
+       id="polygon5-8"
+       transform="translate(40.735863,9.1391367)" />
+    <polygon
+       fill="none"
+       stroke="#010101"
+       stroke-miterlimit="10"
+       points="24,10 24,15 10,15 10,10 12,10 12,13 22,13 22,10 "
+       id="polygon5-308"
+       transform="translate(57.650297,8.3831845)" />
+    <polygon
+       fill="none"
+       stroke="#010101"
+       stroke-miterlimit="10"
+       points="24,10 24,15 10,15 10,10 12,10 12,13 22,13 22,10 "
+       id="polygon5-14"
+       transform="translate(75.037203,9.1391369)" />
+    <polygon
+       fill="none"
+       stroke="#010101"
+       stroke-miterlimit="10"
+       points="24,10 24,15 10,15 10,10 12,10 12,13 22,13 22,10 "
+       id="polygon5-9"
+       transform="translate(93.747024,1.5796129)" />
+    <polygon
+       fill="none"
+       stroke="#010101"
+       stroke-miterlimit="10"
+       points="24,10 24,15 10,15 10,10 12,10 12,13 22,13 22,10 "
+       id="polygon5-2"
+       transform="translate(93.841518,9.0446428)" />
+    <polygon
+       fill="none"
+       stroke="#010101"
+       stroke-miterlimit="10"
+       points="24,10 24,15 10,15 10,10 12,10 12,13 22,13 22,10 "
+       id="polygon5-20"
+       transform="translate(110.75595,1.485119)" />
+    <polygon
+       fill="none"
+       stroke="#010101"
+       stroke-miterlimit="10"
+       points="24,10 24,15 10,15 10,10 12,10 12,13 22,13 22,10 "
+       id="polygon5-57"
+       transform="translate(111.79539,9.6116071)" />
+    <polygon
+       fill="none"
+       stroke="#010101"
+       stroke-miterlimit="10"
+       points="24,10 24,15 10,15 10,10 12,10 12,13 22,13 22,10 "
+       id="polygon5-88"
+       transform="translate(22.309519,16.793155)" />
+    <polygon
+       fill="none"
+       stroke="#010101"
+       stroke-miterlimit="10"
+       points="24,10 24,15 10,15 10,10 12,10 12,13 22,13 22,10 "
+       id="polygon5-19"
+       transform="translate(42.909226,16.887649)" />
+    <polygon
+       fill="none"
+       stroke="#010101"
+       stroke-miterlimit="10"
+       points="18,18 24,24 18,30 12,24 "
+       id="polygon7-6"
+       transform="translate(60.241071,8.6004464)" />
+    <polygon
+       fill="none"
+       stroke="#010101"
+       stroke-miterlimit="10"
+       points="18,18 24,24 18,30 12,24 "
+       id="polygon7-3"
+       transform="translate(75.265625,9.0729166)" />
+    <polygon
+       fill="none"
+       stroke="#010101"
+       stroke-miterlimit="10"
+       points="18,18 24,24 18,30 12,24 "
+       id="polygon7-4"
+       transform="translate(91.046131,8.6949409)" />
+    <polygon
+       fill="none"
+       stroke="#010101"
+       stroke-miterlimit="10"
+       points="18,18 24,24 18,30 12,24 "
+       id="polygon7-47"
+       transform="translate(105.50372,9.261905)" />
+    <polygon
+       fill="none"
+       stroke="#010101"
+       stroke-miterlimit="10"
+       points="24,24 18,30 12,24 18,18 "
+       id="polygon7-8"
+       transform="translate(24.238839,15.970982)" />
+    <polygon
+       fill="none"
+       stroke="#010101"
+       stroke-miterlimit="10"
+       points="18,18 24,24 18,30 12,24 "
+       id="polygon7-7"
+       transform="translate(41.814732,15.781994)" />
+    <polygon
+       fill="none"
+       stroke="#010101"
+       stroke-miterlimit="10"
+       points="21,39 18,39 18,36 12,36 12,40 10,40 10,35 16,35 16,33 17,33 21,37 "
+       id="polygon9-9"
+       transform="translate(12.564732,6.5892857)" />
+    <polygon
+       fill="none"
+       stroke="#010101"
+       stroke-miterlimit="10"
+       points="21,39 18,39 18,36 12,36 12,40 10,40 10,35 16,35 16,33 17,33 21,37 "
+       id="polygon9-8"
+       transform="translate(30.424107,13.581845)" />
+    <polygon
+       fill="none"
+       stroke="#010101"
+       stroke-miterlimit="10"
+       points="21,39 18,39 18,36 12,36 12,40 10,40 10,35 16,35 16,33 17,33 21,37 "
+       id="polygon9-80"
+       transform="translate(46.771577,13.203869)" />
+    <polygon
+       fill="none"
+       stroke="#010101"
+       stroke-miterlimit="10"
+       points="21,39 18,39 18,36 12,36 12,40 10,40 10,35 16,35 16,33 17,33 21,37 "
+       id="polygon9-98"
+       transform="translate(61.418155,8.5736606)" />
+    <polygon
+       fill="none"
+       stroke="#010101"
+       stroke-miterlimit="10"
+       points="21,39 18,39 18,36 12,36 12,40 10,40 10,35 16,35 16,33 17,33 21,37 "
+       id="polygon9-6"
+       transform="translate(77.860119,8.5736602)" />
+    <polygon
+       fill="none"
+       stroke="#010101"
+       stroke-miterlimit="10"
+       points="21,39 18,39 18,36 12,36 12,40 10,40 10,35 16,35 16,33 17,33 21,37 "
+       id="polygon9-5"
+       transform="translate(94.018601,8.8571428)" />
+    <polygon
+       fill="none"
+       stroke="#010101"
+       stroke-miterlimit="10"
+       points="21,39 18,39 18,36 12,36 12,40 10,40 10,35 16,35 16,33 17,33 21,37 "
+       id="polygon9-4"
+       transform="translate(109.42113,9.1406249)" />
+    <polygon
+       fill="none"
+       stroke="#010101"
+       stroke-miterlimit="10"
+       points="21,39 18,39 18,36 12,36 12,40 10,40 10,35 16,35 16,33 17,33 21,37 "
+       id="polygon9-2"
+       transform="translate(123.21726,0.63616082)" />
+    <polygon
+       fill="none"
+       stroke="#010101"
+       stroke-miterlimit="10"
+       points="16,47 16,49 14,49 14,51 12,51 12,49 10,49 10,47 12,47 12,45 14,45 14,47 "
+       id="polygon11-0"
+       transform="translate(-4.7790179,7.751488)" />
+    <polygon
+       fill="none"
+       stroke="#010101"
+       stroke-miterlimit="10"
+       points="16,47 16,49 14,49 14,51 12,51 12,49 10,49 10,47 12,47 12,45 14,45 14,47 "
+       id="polygon11-5"
+       transform="translate(4.3869048,7.2790178)" />
+    <polygon
+       fill="none"
+       stroke="#010101"
+       stroke-miterlimit="10"
+       points="16,47 16,49 14,49 14,51 12,51 12,49 10,49 10,47 12,47 12,45 14,45 14,47 "
+       id="polygon11-8"
+       transform="translate(12.985863,4.3497023)" />
+    <polygon
+       fill="none"
+       stroke="#010101"
+       stroke-miterlimit="10"
+       points="16,47 16,49 14,49 14,51 12,51 12,49 10,49 10,47 12,47 12,45 14,45 14,47 "
+       id="polygon11-9"
+       transform="translate(21.30134,4.3497023)" />
+    <polygon
+       fill="none"
+       stroke="#010101"
+       stroke-miterlimit="10"
+       points="16,47 16,49 14,49 14,51 12,51 12,49 10,49 10,47 12,47 12,45 14,45 14,47 "
+       id="polygon11-96"
+       transform="translate(0.51264859,15.783482)" />
+    <polygon
+       fill="none"
+       stroke="#010101"
+       stroke-miterlimit="10"
+       points="16,47 16,49 14,49 14,51 12,51 12,49 10,49 10,47 12,47 12,45 14,45 14,47 "
+       id="polygon11-1"
+       transform="translate(11.568452,15.027529)" />
+    <polygon
+       fill="none"
+       stroke="#010101"
+       stroke-miterlimit="10"
+       points="16,47 16,49 14,49 14,51 12,51 12,49 10,49 10,47 12,47 12,45 14,45 14,47 "
+       id="polygon11-3"
+       transform="translate(22.151786,14.838542)" />
+    <polygon
+       fill="none"
+       stroke="#010101"
+       stroke-miterlimit="10"
+       points="16,47 16,49 14,49 14,51 12,51 12,49 10,49 10,47 12,47 12,45 14,45 14,47 "
+       id="polygon11-09"
+       transform="translate(32.451637,13.610119)" />
+    <polygon
+       fill="none"
+       stroke="#010101"
+       stroke-miterlimit="10"
+       points="16,47 16,49 14,49 14,51 12,51 12,49 10,49 10,47 12,47 12,45 14,45 14,47 "
+       id="polygon11-93"
+       transform="translate(42.5625,13.232143)" />
+    <polygon
+       fill="none"
+       stroke="#010101"
+       stroke-miterlimit="10"
+       points="16,47 16,49 14,49 14,51 12,51 12,49 10,49 10,47 12,47 12,45 14,45 14,47 "
+       id="polygon11-00"
+       transform="translate(52.484375,12.098215)" />
+    <polygon
+       fill="none"
+       stroke="#010101"
+       stroke-miterlimit="10"
+       points="16,47 16,49 14,49 14,51 12,51 12,49 10,49 10,47 12,47 12,45 14,45 14,47 "
+       id="polygon11-4"
+       transform="translate(65.241071,10.491815)" />
+  </g>
+</svg>
