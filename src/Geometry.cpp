@@ -108,10 +108,10 @@ void Polygon::addVertice(Point &p)
     }
     else
     {
-        BoundingBox.A.x = fmin(BoundingBox.A.x, lP.x);
-        BoundingBox.A.y = fmin(BoundingBox.A.y, lP.y);
-        BoundingBox.B.x = fmax(BoundingBox.B.x, lP.x);
-        BoundingBox.B.y = fmax(BoundingBox.B.y, lP.y);
+        if ( lP.x < BoundingBox.A.x ) BoundingBox.A.x = lP.x;       //  To avoid rounding errors
+        if ( lP.y < BoundingBox.A.y ) BoundingBox.A.y = lP.y;       //  To avoid rounding errors
+        if ( lP.x > BoundingBox.B.x ) BoundingBox.B.x = lP.x;       //  To avoid rounding errors
+        if ( lP.y > BoundingBox.B.y ) BoundingBox.B.y = lP.y;       //  To avoid rounding errors
     }
     if ( nVertices > 2)
         poly_closed = _Vertices[0] == _Vertices[nVertices-1];
@@ -156,12 +156,12 @@ double dmin = 1e20;
     for ( int i = 0; i < nVertices-1; i++)
     {
         //  Compute distance from point lP to segment vertice[i], vertice[i+1]
-        //  If dot product AB.AC si < 0 return distance(A, C)
-        //  Indeed, if this is the case C is in the half plane which is outer segment
+        //  If dot product AB.AP is < 0 return distance(A, P)
+        //  Indeed, if this is the case P is outer segment further than A
         if ( (_Vertices[i+1].x - _Vertices[i].x)*(lP.x - _Vertices[i].x) + (_Vertices[i+1].y-_Vertices[i].y)*(lP.y-_Vertices[i].y) < 0 )
             d1 = ( (lP.x - _Vertices[i].x)*(lP.x- _Vertices[i].x) + (lP.y-_Vertices[i].y)*(lP.y-_Vertices[i].y));
-        //  If dot product BA.BC si > 0 return distance(A, C)
-        else if ( (_Vertices[i].x - _Vertices[i+1].x)*(p.x - _Vertices[i+1].x) + (_Vertices[i].y-_Vertices[i+1].y)*(p.y-_Vertices[i+1].y) < 0 )
+        //  If dot product BA.BP si > 0 return distance(B, P)
+        else if ( (_Vertices[i].x - _Vertices[i+1].x)*(lP.x - _Vertices[i+1].x) + (_Vertices[i].y-_Vertices[i+1].y)*(lP.y-_Vertices[i+1].y) < 0 )
             d1 = ( (lP.x - _Vertices[i+1].x)*(lP.x- _Vertices[i+1].x) + (lP.y-_Vertices[i+1].y)*(lP.y-_Vertices[i+1].y));
         else
         //  Distance point to line is a * p.x + b * p.y + c)*(a * p.x + b * p.y + c)/(a*a + b*b
@@ -438,7 +438,7 @@ double a, b, c;
     }
     for (int i = 0; i < newVertices; i++)
     {
-        if ( isInPoly(&LargePoly->_Vertices[i]) || distance(LargePoly->_Vertices[i]) < Diff - precision )
+        if ( isInPoly(&LargePoly->_Vertices[i]) > 0 || distance(LargePoly->_Vertices[i]) < Diff - precision )
         {
             // Inside poly or too close, delete vertex
             LargePoly->delVertex(i);
@@ -456,7 +456,7 @@ double a, b, c;
     return(LargePoly);
 }
 
-//  Force the computation of polygone area.
+//  Force the computation of polygon area.
 //  Useful if _Vertices was modified
 //  Return the polygon area
 
@@ -474,10 +474,10 @@ void Polygon::ReCalcBoundingBox()
     BoundingBox.B = _Vertices[0];
     for ( int i = 1; i < nVertices - 1; i++)
     {
-        BoundingBox.A.x = fmin(_Vertices[i].x, BoundingBox.A.x);
-        BoundingBox.A.y = fmin(_Vertices[i].y, BoundingBox.A.y);
-        BoundingBox.B.x = fmax(_Vertices[i].x, BoundingBox.B.x);
-        BoundingBox.B.y = fmax(_Vertices[i].y, BoundingBox.B.y);
+        if ( _Vertices[i].x < BoundingBox.A.x ) BoundingBox.A.x = _Vertices[i].x ;
+        if ( _Vertices[i].y < BoundingBox.A.y ) BoundingBox.A.y = _Vertices[i].y ;
+        if ( _Vertices[i].x > BoundingBox.B.x ) BoundingBox.B.x = _Vertices[i].x ;
+        if ( _Vertices[i].y > BoundingBox.B.y ) BoundingBox.B.y = _Vertices[i].y ;
     }
 }
 
@@ -485,7 +485,13 @@ void Polygon::ReCalcBoundingBox()
 
 Rectangle Polygon::GetBoundingBox()
 {
-    return(BoundingBox);
+Rectangle Ret;
+
+    Ret.A.x = BoundingBox.A.x - precision/3;      //    Avoid rounding errors, enlarge slightly bounding box
+    Ret.A.y = BoundingBox.A.y - precision/3;      //    Avoid rounding errors, enlarge slightly bounding box
+    Ret.B.x = BoundingBox.B.x + precision/3;      //    Avoid rounding errors, enlarge slightly bounding box
+    Ret.B.y = BoundingBox.B.y + precision/3;      //    Avoid rounding errors, enlarge slightly bounding box
+    return Ret;
 }
 
 //  Return TRUE if x is betwenn d1 and d2
@@ -500,22 +506,25 @@ static inline bool isBetween(double x, double d1, double d2)
 }
 
 //  Return True if the point is inside the polygon and false otherwise
+//  If the point is a vertex of the polygon, return a negative value (- index vertex - 1)
+//  If the point is on an edge of the polygon, return 0 but set the segment number
 //  Use a ray tracing algorithm for this, launch a ray and if this ray cross the polygon edges an odd number of times the point is inside.
 //  The bounding box of the polygon should be OK before entering this function.
 //  If the _Vertices points were modified without using addVertice, the call of ReCalcBoundingBox is mandatory.
 
-int Polygon::isInPoly(const Point *p)
+int Polygon::isInPoly(const Point *p, int *SegmentIdx)
 {
 double lastX, lastY;
 int inside = false;
 
+    if ( SegmentIdx != nullptr ) *SegmentIdx = -1;      //  If provided, initialize to - 1 (not on an edge
     //  Round coordinates to avoid errors
     Point lP = Point(round(p->x/precision)*precision, round(p->y/precision)*precision);
 
-    if ( lP.x < BoundingBox.A.x ) return false;       //  Outside bounding box, impossible
-    if ( lP.y < BoundingBox.A.y ) return false;       //  Outside bounding box, impossible
-    if ( lP.x > BoundingBox.B.x ) return false;       //  Outside bounding box, impossible
-    if ( lP.y > BoundingBox.B.y ) return false;       //  Outside bounding box, impossible
+    if ( lP.x < BoundingBox.A.x - precision/3 ) return false;       //  Outside bounding box, impossible, sub precision to avoid rounding errors
+    if ( lP.y < BoundingBox.A.y - precision/3) return false;       //  Outside bounding box, impossible
+    if ( lP.x > BoundingBox.B.x + precision/3) return false;       //  Outside bounding box, impossible
+    if ( lP.y > BoundingBox.B.y + precision/3) return false;       //  Outside bounding box, impossible
     //  If the point is a vertex, return true.
     //  Also checks if the point is on one edge, in this case return true
     lastX = _Vertices[0].x;
@@ -523,13 +532,17 @@ int inside = false;
     if ( fabs(lastX-lP.x) + fabs(lastY-lP.y) < precision ) return false;    //  On vertex 0
     for (int i = 1; i < nVertices; i++)
     {
-        if ( fabs(_Vertices[i].x-lP.x) < precision && fabs(_Vertices[i].y-lP.y) < precision) return false;      //  this is a vertex, return false
+        if ( fabs(_Vertices[i].x-lP.x) < 50*precision && fabs(_Vertices[i].y-lP.y) < 50*precision) return -(i+1);      //  this is a vertex, return negative value
         //  Check if lP is on edge between LastX,LastY and _Vertice[i]
         if ( isBetween(lP.x, lastX, _Vertices[i].x) && isBetween(lP.y, lastY, _Vertices[i].y) )
         {
         //  Could be on edge, check if points are aligned : compute determinant
             double det = (lP.x - lastX)*(_Vertices[i].y - lastY) - (lP.y - lastY)*(_Vertices[i].x - lastX);
-            if ( fabs(det) < precision ) return false;      //  On edge, not inside !
+            if ( fabs(det) < precision )
+            {
+                if ( SegmentIdx != nullptr ) *SegmentIdx = i - 1; //    Between i - 1 and i.
+                return false;      //  On edge, not inside !
+            }
         }
         lastX = _Vertices[i].x;
         lastY = _Vertices[i].y;
@@ -550,10 +563,27 @@ int inside = false;
                 {
                     if (curY == lP.y)                   //  Intersect at vertex ?
                     {
-                        //  In this case intersect only if curY-LastY has the same sign as nextY-curY
+                        double DiffY;
+                        //  In this case, change inside if H line really cross the edge
+                        //  If DiffY is not null (not horizontal) and DiffY has not the same sign as curY-LastY, this is not a true intersection.
+                        if ( i < nVertices - 1)
+                            DiffY =  _Vertices[i+1].y - curY;
+                        else
+                            DiffY = _Vertices[0].y - curY;
+                        //  If DiffY is null, do the same thing with next point
+                        if ( DiffY == 0 )
+                        {
+                            if ( i < nVertices - 2)
+                                DiffY =  _Vertices[i+2].y - curY;
+                            else if ( i == nVertices - 2)
+                                DiffY = _Vertices[0].y - curY;
+                            else
+                                DiffY = _Vertices[1].y - curY;
+                        }
+                        //  In this case intersect only if curY-LastY has the same sign as DiffY
                         double sign = -1;
                         if ( i < nVertices - 1)
-                            sign = (curY - lastY) * (_Vertices[i+1].y - curY);
+                            sign = (curY - lastY) * DiffY;
                         if ( sign > 0 && lP.x <= curX )
                             inside = !inside;
                     }
@@ -637,9 +667,11 @@ double cx = 0, cy = 0;
     return poly_centroid;
 }
 
-//  Translate the polygon such as centroid will be moved to pT
-//  Centroid must be ok before call
-//  Return a new Polygon
+/**
+*  Translate the polygon such as centroid will be moved to pT
+*  Centroid must be ok before call
+*  Return a new Polygon
+*/
 
 Polygon *Polygon::Translate(const Point *pT)
 {
@@ -657,6 +689,7 @@ Polygon *Translated = new Polygon;
         Translated->_Vertices[i].x += Translated->pt_Translation.x;
         Translated->_Vertices[i].y += Translated->pt_Translation.y;
     }
+    Translated->_Angles = _Angles;
     Translated->poly_area = poly_area;
     Translated->poly_centroid = poly_centroid + Translated->pt_Translation;
     Translated->angle_rotation = angle_rotation;
@@ -692,6 +725,7 @@ Polygon *Translated = new Polygon;
         newy = round(newy/precision)*precision;
         Translated->_Vertices[i].y = newy;
     }
+    Translated->_Angles = _Angles;
     Translated->poly_area = poly_area;
     Translated->poly_centroid = poly_centroid + Translated->pt_Translation;
     Translated->angle_rotation = angle_rotation;
@@ -814,8 +848,10 @@ double xmin = 0, xmax = 0, ymin = 0, ymax = 0;
     return Transformed;
 }
 
-//  Compute angles of each polygon edge
-//  The result is stored in a vector
+/**
+*  Compute angles of each polygon edge
+*  The result is stored in a vector
+*/
 
 void Polygon::ComputeAngles()
 {
@@ -831,11 +867,17 @@ void Polygon::ComputeAngles()
     _Angles[nVertices-1] = 0.0;
 }
 
-//  Return true if one segment of current polygon intersect one segment of Poly2
+/**
+*   Return true if one segment of current polygon intersect one segment of Poly2
+*   Do do this, checks for each segment of Poly2 if it crosses one segment of this
+*   If one segment of Poly2 is included in one segment of this (or the reverse), if segments share same direction return true
+*   Indeed two polygons couldn't share a segment in the same direction without crossing or being included.
+*/
 
 bool Polygon::Intersect(Polygon *Poly2)
 {
 Segment *pSeg2;
+bool ShareSegment = false;      //  If true, one segment is included in another
 
     for ( int i = 0; i < Poly2->nVertices - 1; i++)
     {
@@ -847,14 +889,45 @@ Segment *pSeg2;
         //  Possible, so check with all edges of polygon 1
         for ( int j = 0; j < nVertices - 1; j++)
         {
-            if ( _Segments[j].isCrossingNoEnd(pSeg2, NULL) )
+            if ( _Segments[j].isCrossingNoEnd(pSeg2, NULL, &ShareSegment) ) //  Cross return true
                 return true;
+            //  If lines are parallel checks for inclusion, at least partial
+            if ( ShareSegment )
+            {
+                Point ptA1 = pSeg2->getPointA();
+                Point ptB1 = pSeg2->getPointB();
+                Point ptA2 = _Segments[j].getPointA();
+                Point ptB2 = _Segments[j].getPointB();
+                if ( _Segments[i].InSegmentNoEnd(ptA1) )
+                {
+                    //cout << "Shared point A of " << *pSeg2 << " in " << _Segments[j] << " with same rotation side\n";
+                    return true;
+                }
+                if ( _Segments[i].InSegmentNoEnd(ptB1) )
+                {
+                    //cout << "Shared point B of " << *pSeg2 << " in " << _Segments[j] << " with same rotation side\n";
+                    return true;
+                }
+                if ( pSeg2->InSegmentNoEnd(ptA2) )
+                {
+                    //cout << "Shared point A of " << _Segments[j] << " in " <<  pSeg2 << " with same rotation side\n";
+                    return true;
+                }
+                if ( pSeg2->InSegmentNoEnd(ptB2) )
+                {
+                    //cout << "Shared point B of " << _Segments[j] << " in " <<  pSeg2 << " with same rotation side\n";
+                    return true;
+                }
+            }
         }
     }
     return false;
 }
 
-//  Delete all vertices which are not necessary, i.e. when removing then will lead to an error less than max_error
+/**
+*  Delete all vertices which are not necessary, i.e. when removing then will lead to an error less than max_error
+*/
+
 void Polygon::Simplify(double max_error)
 {
 Point A = _Vertices[nVertices-1];           //  Start at end of polygon, to keep indexes OK
@@ -911,7 +984,7 @@ int Polygon::Poly_in_Poly(Polygon *Big)
     //  True algoritm, check all vertices
     for ( int i = 0; i < nVertices; i++)
     {
-        if ( ! Big->isInPoly(&_Vertices[i]))
+        if ( ! (Big->isInPoly(&_Vertices[i]) > 0) )
             return false;           //  Vertex i is not in Big, not included !
     }
     return true;

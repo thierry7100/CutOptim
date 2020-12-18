@@ -1058,7 +1058,10 @@ void SvgDoc::BuilSingleListPath()
         OutDebug << "-----------   End of BuilSingleListPath  ---------------------------\n\n\n";
     }
 }
-//  Sort polygons by area, larger first
+
+/**
+*  Sort polygons by area, larger first
+*/
 
 void SvgDoc::SortbyArea()
 {
@@ -1102,8 +1105,13 @@ bool CheckOKAngles(double alpha, double beta, double a)
         return ( a >= alpha - angle_precision || a <= beta + angle_precision );
     }
 }
-//  Check if it is possible to place vertex idx_m of polygon mP at vertex idx_f of polygon fP
-//  The edges of the moving polygon should NOT be inside the polygon fP
+
+
+/**
+*  Check if it is possible to place vertex idx_m of polygon mP at vertex idx_f of polygon fP
+*  The edges of the moving polygon should NOT be inside the polygon fP
+*  Return true if OK, false if NOK
+*/
 
 static bool CheckAngles(Polygon *mP, int idx_m, Polygon *fP, int idx_f)
 {
@@ -1154,10 +1162,58 @@ double sf1, sf2;        //  Slopes for fixed polygon at requested vertex (just b
     return true;
 }
 
-//  Compute the angle index iRot when vertex iVertexFloat of float polygon FloatPoly if placed on vertex iVertexFixed of fixed polygon FixedPoly
-//  Check if the other edge angle is OK with this rotation.
-//  If position is OK, return 1, if not return 0
-//  The parameter angle is upated by this function.
+/**
+*  Check if it is possible to place vertex idx_m of polygon mP on the edge (segment) idx_f of the Polygon fP
+*  The edges of the moving polygon should NOT be inside the polygon fP
+*  Return true if OK, false if NOK
+*/
+
+static bool CheckAnglesOnEdge(Polygon *mP, int idx_m, Polygon *fP, int idx_f)
+{
+double sm1, sm2;        //  Slopes for moving (new) polygon at requested vertex (just before and after)
+double sf1, sf2;        //  Slopes for fixed polygon at requested vertex (just before and after)
+
+    if ( idx_m == 0)
+    {
+        //  Arrival segment, angle is pi + slope, and if angle is greater than pi, substract 2*pi to keep value between -pi and +pi
+        sm1 = mP->getSlope(mP->nVertices-2) + M_PI;
+        if ( sm1 > M_PI ) sm1 -= 2*M_PI;
+        sm2 = mP->getSlope(0);
+    }
+    else
+    {
+        //  Arrival segment, angle is pi + slope, and if angle is greater than pi, substract 2*pi to keep value between -pi and +pi
+        sm1 = mP->getSlope(idx_m-1) + M_PI;
+        if ( sm1 > M_PI ) sm1 -= 2*M_PI;
+        sm2 = mP->getSlope(idx_m);
+    }
+    //  In this case on an edge, same angle with +PI as difference
+    //  Arrival segment, angle is pi + slope, and if angle is greater than pi, substract 2*pi to keep value between -pi and +pi
+    sf1 = fP->getSlope(idx_f) + M_PI;
+    if ( sf1 > M_PI ) sf1 -= 2*M_PI;
+    sf2 = fP->getSlope(idx_f);
+    //  check if sm1 is OK, given angles sf1 and sf2
+    int res1 = CheckOKAngles(sf1, sf2, sm1);
+    if ( res1 == 0 ) return false;
+    //  Idem with sm2
+    int res2 = CheckOKAngles(sf1, sf2, sm2);
+    if (res2 == 0 ) return false;
+    //  Also check sf1 upon sm1 and sm2
+    int res3 = CheckOKAngles(sm1, sm2, sf1);
+    if ( res3 == 0 ) return false;
+    //  and finally sf2 upon sm1 and sm2
+    int res4 = CheckOKAngles(sm1, sm2, sf2);
+    if (res4 == 0 ) return false;
+    //  All is OK, return true
+    return true;
+}
+
+/**
+*  Compute the angle index iRot when vertex iVertexFloat of float polygon FloatPoly if placed on vertex iVertexFixed of fixed polygon FixedPoly
+*  Check if the other edge angle is OK with this rotation.
+*  If position is OK, return 1, if not return 0
+*  The parameter angle is upated by this function.
+*/
 
 bool ComputeFreeRotAngle(Polygon *FloatPoly, int iVertexFloat, Polygon *FixedPoly, int iVertexFixed, int iRot, double &angle)
 {
@@ -1474,21 +1530,23 @@ Point RefPoint;
                 //  Try all vertices of the floating polygon, and select the best
                 for (int j = 0; j < rot_p->nVertices-1; j++)
                 {
-#ifdef UNDEF
-                    cout << "Passage=" << DebugPassage << " iRot=" << iRot << " Fixed=" << FixedPolygon << " i=" << i << " j=" << j << " rot_p->nVertices=" << rot_p->nVertices << "\n";
-                    if ( iRot == 5 && i == 22 && j == 3 )
+//#ifdef UNDEF
+//                   static int DebugPassage;
+//                    cout << "Passage=" << DebugPassage << " iRot=" << iRot << " Fixed=" << FixedPolygon << " i=" << i << " j=" << j << " rot_p->nVertices=" << rot_p->nVertices << "\n";
+//                    if ( iRot == 0 && i == 1 && j == 3 )
+//                    {
+//                        DebugPassage++;
+//                        cout << " Test rot_p (" << rot_p << ") rot_p->nVertices=" << rot_p->nVertices << "\n";
+//                    }
+                    //cout << "Trying vertex " << j << " of polygon " << FloatPolygon << " on vertex " << i << " of polygon " << FixedPolygon << "\n";
+                    if ( FloatPolygon == 1 && j == 2 && i == 3 && FixedPolygon == 0 )
                     {
-                        DebugPassage++;
-                        cout << " Test rot_p (" << rot_p << ") rot_p->nVertices=" << rot_p->nVertices << "\n";
-                    }
-                    if ( FloatPolygon == 2 && j == 3 && i == 2 && FixedPolygon == 0 )
-                    {
-                        if ( debug_level > 2 )
+                        if ( debug_level > 1 )
                         {
                             OutDebug << "Test Check Angles, align vertex " << j << " on vertex " << i << " : " << *curFixed->GetVertex(i) << "\n";
                         }
                     }
-#endif
+//#endif
                     //  Use cache if available
                     trans_rot_p = NULL;
                     int Cached = WorkingFloatingEntry->CachePoly->isOKPlaced(j, iRot, iFixedVertex, &trans_rot_p);
@@ -1511,7 +1569,7 @@ Point RefPoint;
                         nbCheckAngles++;
                         if ( rot_p->nVertices == 0 )
                         {
-                            cout << " rot_p (" << rot_p << ") invalid with 0 vertices, level =" << LevelOptimize << " Float poly = " << FloatPolygon << "\n";
+                            cerr << " rot_p (" << rot_p << ") invalid with 0 vertices, level =" << LevelOptimize << " Float poly = " << FloatPolygon << "\n";
                         }
                         if (CheckAngles(rot_p, j, curFixed, i) == 0)
                         {
@@ -1554,7 +1612,7 @@ Point RefPoint;
                         nbPlacementImpossible++;
                         if ( rot_p->nVertices == 0 )
                         {
-                            cout << " rot_p (" << rot_p << ") invalid with 0 vertices, level =" << LevelOptimize << " Float poly = " << FloatPolygon << "\n";
+                            cerr << " rot_p (" << rot_p << ") invalid with 0 vertices, level =" << LevelOptimize << " Float poly = " << FloatPolygon << "\n";
                         }
                         continue;
                     }
@@ -1631,19 +1689,26 @@ Point RefPoint;
 
                     if ( tmpHullArea < BestCost  )
                     {   //  Yes record new best value and corresponding position
-                        BestCost = tmpHullArea;
-                        BestAngle = angle;
-                        BestTranslation = trans_rot_p->getTranslation();
-                        Best_i = i;
-                        Best_j = j;
-                        Best_Poly = FixedPolygon;
-                        if ( debug_level > 1 )
+                        if ( tmpHullArea < tmpPolygonArea )
                         {
-                            OutDebug << "New best found placing polygon " << FloatPolygon << "\n";
-                            OutDebug << "  Vertex " << j << " on vertex " << i << " of polygon " <<  FixedPolygon << "\n";
-                            OutDebug << " Rotation=" << round(angle*180/M_PI) << " Translation " << BestTranslation << " from " << *(rot_p->GetVertex(j)) << " to " <<  *(curFixed->GetVertex(i)) << "\n";
-                            OutDebug << "  Hull area:" << tmpHullArea << " Polygon area:" << tmpPolygonArea << "\n";
+                            cerr << "Internal error, hull area is lower than polygon area!\n";
+                        }
+                        //else
+                        {
+                            BestCost = tmpHullArea;
+                            BestAngle = angle;
+                            BestTranslation = trans_rot_p->getTranslation();
+                            Best_i = i;
+                            Best_j = j;
+                            Best_Poly = FixedPolygon;
+                            if ( debug_level > 1 )
+                            {
+                                OutDebug << "New best found placing polygon " << FloatPolygon << "\n";
+                                OutDebug << "  Vertex " << j << " on vertex " << i << " of polygon " <<  FixedPolygon << "\n";
+                                OutDebug << " Rotation=" << round(angle*180/M_PI) << " Translation " << BestTranslation << " from " << *(rot_p->GetVertex(j)) << " to " <<  *(curFixed->GetVertex(i)) << "\n";
+                                OutDebug << "  Hull area:" << tmpHullArea << " Polygon area:" << tmpPolygonArea << "\n";
 
+                            }
                         }
                     }
                     if ( Cached == 0 )
@@ -1651,7 +1716,7 @@ Point RefPoint;
                         delete trans_rot_p;     //  No need to keep, free memory
                         if ( rot_p->nVertices == 0 )
                         {
-                            cout << " rot_p (" << rot_p << ") invalid with 0 vertices, level =" << LevelOptimize << " Float poly = " << FloatPolygon << "\n";
+                            cerr << " rot_p (" << rot_p << ") invalid with 0 vertices, level =" << LevelOptimize << " Float poly = " << FloatPolygon << "\n";
                         }
                     }
                 }
@@ -1661,7 +1726,7 @@ Point RefPoint;
     //  Do some cleaning...
     if ( rot_p->nVertices == 0 )
     {
-        cout << " rot_p (" << rot_p << ") invalid with 0 vertices, level =" << LevelOptimize << " Float poly = " << FloatPolygon << "\n";
+        cerr << " rot_p (" << rot_p << ") invalid with 0 vertices, level =" << LevelOptimize << " Float poly = " << FloatPolygon << "\n";
     }
     if ( rot_p != NULL ) delete rot_p;
     rot_p = NULL;
@@ -1792,6 +1857,7 @@ int SvgDoc::PlacementNotPossible(Polygon *CurPoly, std::list<NSVGpath *> FixedPa
 int PlacedPolygon = 0;
 int FixedBit = 0;
 int FixedVertex = 0;
+int CCW_B;
 
     if ( Cached == 0 )      //  If cached, no need to recompute !
     {
@@ -1821,14 +1887,47 @@ int FixedVertex = 0;
         FixedVertex += path->LargePolygon->nVertices;
         if ( Cached != 0 && path->isFixed && Cached > FixedVertex) continue;       //  No need to reprocess fixed polygons already computed
         //  Check if start point of real path is inside polygon. This test is mandatory to avoid placing two polygons at the same place !
-        if ( path->PlacedPolygon->isInPoly(RefPoint))
+        if ( path->PlacedPolygon->isInPoly(RefPoint) > 0)
             return FAIL_VERTEX_IN_POLYGON | FixedBit;
         //  Then check for all vertices of polygon
+        int idx_common_vertex_B = -1;
+        int SegmentIndex = -1;
         for ( int i = 0; i < CurPoly->nVertices; i++ )
         {
             nbPointInPoly++;
-            if ( path->PlacedPolygon->isInPoly(CurPoly->GetVertex(i)))
+            int ResInPoly = path->PlacedPolygon->isInPoly(CurPoly->GetVertex(i), &SegmentIndex);
+            if ( ResInPoly > 0 )        //  Vertex in polygon, bad placement
                 return FAIL_VERTEX_IN_POLYGON | FixedBit;
+            //  If point is on an edge of PlacedPolygon, check angles to verify that this is possible
+            if ( ResInPoly == 0 && SegmentIndex >= 0 )
+            {
+                //cout << "Point " << i << "=" << *CurPoly->GetVertex(i) << " is on Segment " << SegmentIndex << " of polygon. Segment is " <<  path->PlacedPolygon->GetSegment(SegmentIndex) << "\n";
+                //  If impossible, the edge will be inside the Placed Polygon.
+                if ( !CheckAnglesOnEdge(CurPoly, i, path->PlacedPolygon, SegmentIndex) )
+                    return FAIL_EDGE_INTERSECT | FixedBit;
+            }
+            //  If the 2 polygons share more than 2 vertices with the same order (clockwise or counter clockwise), placement is NOT possible
+            if ( ResInPoly < 0  )
+            {
+                //  Compute difference between indices of common vertices of polygon B ( the biggest one )
+                if ( idx_common_vertex_B >= 0 )
+                {
+                    int diffB = -ResInPoly - idx_common_vertex_B;
+                    if (diffB < 0) diffB += path->PlacedPolygon->nVertices;
+                    CCW_B = (2*diffB > path->PlacedPolygon->nVertices);
+                    // If at least 2 common vertex, one should be CCW and other one CW
+                    //  So CCW_B should be true
+                    if (CCW_B == 0 )
+                    {
+                        if ( debug_level > 1 )
+                        {
+                            OutDebug << "Placement impossible , polygon share at least 2 vertices with polygon " << PlacedPolygon << ", vertices are " <<  idx_common_vertex_B << " and " << -ResInPoly << "\n";
+                        }
+                        return FAIL_VERTEX_IN_POLYGON | FixedBit;
+                    }
+                }
+                idx_common_vertex_B = -ResInPoly;
+            }
         }
     }
 
@@ -1870,9 +1969,9 @@ int num = 0;
 
 //  Optimize placement procedure when rotation is chosen among fixed angles
 //  parameters
-//  Optimizing level : optimize placement of a group ogf optimizing level polygons. Beware, value of Optimizing level above 3 will lead to very slow processing
+//  Optimizing level : optimize placement of a group of polygons. Beware, value of Optimizing level above 3 will lead to very slow processing
 //  FirstPos : hint to lace first (largest polygon).
-//  Flag_File : if true, output in a file, so information output on consoleis allowed.
+//  Flag_File : if true, output in a file, so information output on console is allowed.
 //
 //  Return : cost (area of convex hull) of all placed polygons.
 
@@ -2266,7 +2365,7 @@ Point RefPoint;
                         delete trans_rot_p;     //  No need to keep, free memory
                         if ( rot_p->nVertices == 0 )
                         {
-                            cout << " rot_p (" << rot_p << ") invalid with 0 vertices, level =" << LevelOptimize << " Float poly = " << FloatPolygon << "\n";
+                            cerr << " rot_p (" << rot_p << ") invalid with 0 vertices, level =" << LevelOptimize << " Float poly = " << FloatPolygon << "\n";
                         }
                     }
                }
