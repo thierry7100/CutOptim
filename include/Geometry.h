@@ -7,7 +7,7 @@
 #include <stdlib.h>
 using namespace std;
 
-const double my_Default_Precision = 1e-2;
+const double my_Default_Precision = 1e-4;
 const double angle_precision = 1e-6;
 
 enum PositionType {
@@ -145,6 +145,8 @@ class Rectangle
 {
     public:
     Point A, B;
+
+    double get_area() { return fabs((B.x - A.x)*(B.y - A.y)); }
 };
 
 /**
@@ -438,6 +440,19 @@ class Polygon
         void Simplify(double max_error);
         void CalcSegments();
         int TypePoly;
+
+        /*
+		Overloaded ostream << operator to check for print object of class point to STDOUT
+        */
+        friend ostream& operator<<(ostream& output,const Polygon& Poly)
+        {
+            output<<"Polygon with " << Poly.nVertices << " vertices : " ;
+            output << Poly._Vertices[0];
+            for ( int i = 1; i < Poly.nVertices; i++ )
+                output << ", " << Poly._Vertices[i];
+            output << '\n';
+            return output;
+        }
 
 
     protected:
