@@ -21,6 +21,8 @@ using namespace std;
 
 #define DEBUG_BEZIER    0
 
+//  Minimum distance from edge of the sheet for first placement
+const double MARGIN_PAGE = 1.0;
 
 enum ReasonPlacementFailure {
 	FAIL_OUTSIDE_SHEET = 1,
@@ -574,6 +576,7 @@ SvgDoc::SvgDoc(string &FileName)
 
     StartClock = clock();
     Name = FileName;
+    RectCostFactor = 0.0;
 	// Load SVG
 	SvgData = nsvgParseFromFile(FileName.c_str(), "mm", 25.4);
 	if (SvgData )
@@ -1053,6 +1056,8 @@ void SvgDoc::BuilSingleListPath()
         for (std::list<NSVGpath *>::iterator it=listPath.begin(); it != listPath.end(); ++it)
         {
             OutDebug << "  Path " << idx << " id: " << (*it)->id << " area " <<  (*it)->LargePolygon->area() << "mm2 and " << NbChildren(*it) << " children\n";
+            if ( debug_level > 1 )
+                OutDebug << *((*it)->LargePolygon);
             idx++;
         }
         OutDebug << "-----------   End of BuilSingleListPath  ---------------------------\n\n\n";
@@ -1376,7 +1381,8 @@ int num_rot = int((2*M_PI-0.001) / StepAngle) + 1;
             NewFixed->isFixed = true;
             FixedPath.push_back(NewFixed);    //    Put it in fixed list
             //  Could (and should) free cache memory for this one
-            delete NewFixed->CachePoly;
+            if ( NewFixed->CachePoly != NULL)
+                delete NewFixed->CachePoly;
             NewFixed->CachePoly = NULL;
             FixedArea += NewFixed->LargePolygon->area();
             FixedPolyHull = NewFixed->LargeConvexHull;
@@ -1397,7 +1403,7 @@ int num_rot = int((2*M_PI-0.001) / StepAngle) + 1;
         if ( Flag_file )
         {
             StartLevel = clock();
-            cout << "Polygon " << idxPoly << "  Not placed " << NotPlaced << "  Elapsed time " << ((double)1000.0*(StartLevel - LastLevel))/CLOCKS_PER_SEC << "\n";
+            cout << "Polygon " << idxPoly << ", id(" << NewFixed->id << ")  Not placed " << NotPlaced << "  Elapsed time " << ((double)1000.0*(StartLevel - LastLevel))/CLOCKS_PER_SEC << "\n";
 #if CHECK_MEM > 0
             cout << " mem Poly_empty=" << nbEmptyPoly << "/" << nbCreatedEmptyPoly <<  " mem Poly_Vector=" << nbVectorPoly << "/" << nbCreatedVectorPoly;
             cout <<  " Rot_Poly=" << nbRotatedPoly << "/" << nbCreatedRotatedPoly;
@@ -1474,7 +1480,7 @@ Point RefPoint;
     if ( debug_level > 1 )
     {
         OutDebug << "Entering OptimizeLevel(" << LevelOptimize <<  "): FixedHullArea " <<  FixedPolyHull->area() << " Fixed area " << FixedArea;
-        OutDebug << " InBestCost=" << InBestCost << "\n";
+        OutDebug << ", Cost is " << Cost << ", InBestCost=" << InBestCost << "\n";
         OutDebug << "Elements in list:" << CurFloating.size() << " first is " << CurFloating.front()->id << "\n";
     }
     FixedHull = FixedPolyHull->GetVertices();
@@ -1487,16 +1493,24 @@ Point RefPoint;
     BestCost = 1e100;          //  Very large, each try should be better
     BestAngle = -1;            //   Impossible value
 
+    double tmpPolygonArea = FixedArea + WorkingFloatingEntry->LargePolygon->area();
+    int nPreviousVertices = getFixedNbVertex(FixedList);            //  Number of vertices of all polygons before this one
     if ( debug_level > 1 )
     {
         OutDebug << "Polygon to be placed : " << WorkingFloatingEntry->id << "  has " << WorkingFloatingEntry->LargePolygon->nVertices << " vertices.\n";
     }
-    double tmpPolygonArea = FixedArea + WorkingFloatingEntry->LargePolygon->area();
-    int nPreviousVertices = getFixedNbVertex(FixedList);            //  Number of vertices of all polygons before this one
     //  Build a cache object which will speed up computation if not yet present
-    if ( WorkingFloatingEntry->CachePoly == NULL )
+    if (UseCache && WorkingFloatingEntry->CachePoly == NULL )
     {
         WorkingFloatingEntry->CachePoly = new CachePosition(WorkingFloatingEntry->LargePolygon->nVertices, num_rot, nPreviousVertices);
+        if ( debug_level > 1 )
+        {
+            OutDebug << "Create cache object for polygon " << WorkingFloatingEntry->id << "  with " << WorkingFloatingEntry->LargePolygon->nVertices*num_rot*nPreviousVertices << " entries.\n";
+        }
+    }
+    else if ( UseCache and debug_level > 1)
+    {
+        OutDebug << "Cache object for polygon " << WorkingFloatingEntry->id << "  is already present \n";
     }
 #ifdef UNDEF
     if ( FloatPolygon == 2)
@@ -1530,7 +1544,7 @@ Point RefPoint;
                 //  Try all vertices of the floating polygon, and select the best
                 for (int j = 0; j < rot_p->nVertices-1; j++)
                 {
-//#ifdef UNDEF
+#ifdef UNDEF
 //                   static int DebugPassage;
 //                    cout << "Passage=" << DebugPassage << " iRot=" << iRot << " Fixed=" << FixedPolygon << " i=" << i << " j=" << j << " rot_p->nVertices=" << rot_p->nVertices << "\n";
 //                    if ( iRot == 0 && i == 1 && j == 3 )
@@ -1539,23 +1553,30 @@ Point RefPoint;
 //                        cout << " Test rot_p (" << rot_p << ") rot_p->nVertices=" << rot_p->nVertices << "\n";
 //                    }
                     //cout << "Trying vertex " << j << " of polygon " << FloatPolygon << " on vertex " << i << " of polygon " << FixedPolygon << "\n";
-                    if ( FloatPolygon == 1 && j == 2 && i == 3 && FixedPolygon == 0 )
+                    if ( FloatPolygon == 5 && iRot == 4 && j == 4 && i == 0 && FixedPolygon == 4 )
                     {
                         if ( debug_level > 1 )
                         {
                             OutDebug << "Test Check Angles, align vertex " << j << " on vertex " << i << " : " << *curFixed->GetVertex(i) << "\n";
                         }
                     }
-//#endif
+#endif
                     //  Use cache if available
                     trans_rot_p = NULL;
-                    int Cached = WorkingFloatingEntry->CachePoly->isOKPlaced(j, iRot, iFixedVertex, &trans_rot_p);
+                    int Cached = 0;
+                    if ( UseCache )
+                        Cached = WorkingFloatingEntry->CachePoly->isOKPlaced(j, iRot, iFixedVertex, &trans_rot_p);
 #ifdef UNDEF
-                    if (FloatPolygon == 2 && iRot == 0 && iFixedVertex == 2 && j == 3 )
+                    if (FloatPolygon == 2 && iRot == 1 && iFixedVertex == 2 && j == 3 )
                     {
                         OutDebug << "Vertex 3 of polygon 2 on Vertex 2 of Polygon 0, Cached =" << Cached << "  trans_rot_p = " << trans_rot_p << "\n";
                     }
 #endif
+                    if ( FloatPolygon == 2 && iRot == 1 && FixedPolygon == 0 && i == 0 && j == 1)
+                    {
+                        OutDebug << "Breakpoint reached!\n";
+                        OutDebug.flush();
+                    }
                     if ( Cached < 0 )       //  Cache says impossible !
                     {
                         CacheHit_KO++;
@@ -1574,7 +1595,8 @@ Point RefPoint;
                         if (CheckAngles(rot_p, j, curFixed, i) == 0)
                         {
                             //  Impossible, invalid cache entry
-                            WorkingFloatingEntry->CachePoly->addOKPlaced(j, iRot, iFixedVertex, NULL);
+                            if ( UseCache )
+                                WorkingFloatingEntry->CachePoly->addOKPlaced(j, iRot, iFixedVertex, NULL);
                             if ( debug_level > 2 )
                                 OutDebug << "Placement polygon " << FloatPolygon << " vertex " << j << " on vertex " << i << " of Polygon " << FixedPolygon << " impossible " << *curFixed->GetVertex(i) << ", reason angle mismatch\n";
                             continue;    //  Not possible goto next without further processing
@@ -1598,7 +1620,7 @@ Point RefPoint;
                         //  If impossible due to conflict with fixed polygon, invalidate cache entry
                         if ( path->isFixed && (Reason & FIXED_BIT) != 0 )
                         {
-                            WorkingFloatingEntry->CachePoly->addOKPlaced(j, iRot, iFixedVertex, NULL);
+                            if ( UseCache ) WorkingFloatingEntry->CachePoly->addOKPlaced(j, iRot, iFixedVertex, NULL);
                             delete trans_rot_p;
                             trans_rot_p = NULL;
                         }
@@ -1618,8 +1640,11 @@ Point RefPoint;
                     }
                     if ( path->isFixed && Cached == 0)        //  If current vertex belongs to a fixed path, cache value
                     {
-                        WorkingFloatingEntry->CachePoly->addOKPlaced(j, iRot, iFixedVertex, trans_rot_p);
-                        Cached = 1;
+                        if ( UseCache )
+                        {
+                            WorkingFloatingEntry->CachePoly->addOKPlaced(j, iRot, iFixedVertex, trans_rot_p);
+                            Cached = 1;
+                        }
 #ifdef UNDEF
                         if ( LevelOptimize == 1 && FloatPolygon == 2 && iRot == 0 && iFixedVertex == 2 && j == 3 )
                         {
@@ -1631,12 +1656,14 @@ Point RefPoint;
 #endif
                     }
                     //  Compute cost function
-                    //  We will use only the Hull area.
-                    //  As the Hull will only grow with subsequent calls, if a temp value is greater than the best one, no need to process further polygons
+                    //  We will use the Hull area and a factor of the bounding box.
+                    //  As the Hull and bounding box will only grow with subsequent calls, if a temp value is greater than the best one, no need to process further polygons
                     vector<Point> tmpHull = CombineHull(FixedHull, trans_rot_p->GetVertices());
                     double tmpHullArea = HullArea(tmpHull);
+                    Rectangle tmpOverall = Hull2BoundingBox(FixedHull);
+                    double CurrentCost = tmpHullArea + RectCostFactor*tmpOverall.get_area();
                     if ( debug_level > 1)
-                        OutDebug << "  Vertex " << j << " on " << i << " of polygon " << FixedPolygon << " Hull area " << tmpHullArea << "--> DiffArea=" << tmpHullArea - tmpPolygonArea << "\n";
+                        OutDebug << "  Vertex " << j << " on " << i << " of polygon " << FixedPolygon << " Hull area " << tmpHullArea << " Cost " << CurrentCost << "--> DiffArea=" << CurrentCost - tmpPolygonArea << "\n";
                     //  In this case, call again this function but with a list without the first element
                     //  First copy the list, the first element has already been removed
                     std::list<NSVGpath *> tmpFloatList = CurFloating;
@@ -1655,15 +1682,15 @@ Point RefPoint;
                     tmpFixedHull = CombineHull(FixedHull, WorkingFloatingEntry->PlacedPolygon->GetVertices());
                     WorkingFloatingEntry->LargeConvexHull = new Polygon(tmpFixedHull);
                     WorkingFloatingEntry->LargeConvexHull->ReCalcArea();
-                    if ( debug_level > 1 && !tmpFloatList.empty() && tmpHullArea >= InBestCost )
+                    if ( debug_level > 1 && !tmpFloatList.empty() && CurrentCost >= InBestCost )
                     {
-                        OutDebug << " TmpHullarea (" << tmpHullArea << ") larger than input best values (" << InBestCost << ") no need to process other polygons in list\n";
+                        OutDebug << "L" << LevelOptimize << ", CurrentCost (" << CurrentCost << ") larger than input best values (" << InBestCost << ") no need to process other polygons in list\n";
                     }
-                    if ( debug_level > 1 && !tmpFloatList.empty() && tmpHullArea >= BestCost )
+                    if ( debug_level > 1 && !tmpFloatList.empty() && CurrentCost >= BestCost )
                     {
-                        OutDebug << " TmpHullarea (" << tmpHullArea << ") larger than current best values (" << BestCost << ") no need to process other polygons in list\n";
+                        OutDebug << "L" << LevelOptimize << ", CurrentCost (" << CurrentCost << ") larger than current best values (" << BestCost << ") no need to process other polygons in list\n";
                     }
-                    if ( !tmpFloatList.empty() && (tmpHullArea <= InBestCost && tmpHullArea <= BestCost) ) //  No need to go deeper, if nothing in list or cost already too high
+                    if ( !tmpFloatList.empty() && (CurrentCost <= InBestCost && CurrentCost <= BestCost) ) //  To go deeper, we need something in list and cost lower than previous min
                     {
                         if ( debug_level > 1 )
                         {
@@ -1674,28 +1701,28 @@ Point RefPoint;
                         }
                         OverAll = Hull2BoundingBox(FixedHull);
                         //  Then call Optimize level if the floating list is non empty
-                        NSVGpath *Res = OptimizeLevel(WorkingFloatingEntry->LargeConvexHull, tmpFixedList, tmpFloatList, num_rot, StepAngle, tmpFixedArea, tmpHullArea, BestCost, FloatPolygon+1, nbFixedPoly, LevelOptimize - 1);
+                        NSVGpath *Res = OptimizeLevel(WorkingFloatingEntry->LargeConvexHull, tmpFixedList, tmpFloatList, num_rot, StepAngle, tmpFixedArea, CurrentCost, BestCost, FloatPolygon+1, nbFixedPoly, LevelOptimize - 1);
                         if ( Res == NULL )
                         {
-                            //  Placement impossible, make sure that tmpHullArea will be greater than BestCost
-                            tmpHullArea = BestCost + 10;
+                            //  Placement impossible, make sure that CurrentCost will be greater than BestCost
+                            CurrentCost = BestCost + 10;
                         }
-                        //  After return, the tmpHullArea is updated
+                        //  After return, the CurrentCost is updated
                         if ( debug_level > 1 )
                         {
-                            OutDebug << "-----   Returning at level " << LevelOptimize << ",  Cost is " << tmpHullArea << "\n";
+                            OutDebug << "-----   Returning at level " << LevelOptimize << ",  Cost is " << CurrentCost << "\n";
                         }
                     }
 
-                    if ( tmpHullArea < BestCost  )
+                    if ( CurrentCost < BestCost  )
                     {   //  Yes record new best value and corresponding position
-                        if ( tmpHullArea < tmpPolygonArea )
+                        if ( CurrentCost < tmpPolygonArea )
                         {
                             cerr << "Internal error, hull area is lower than polygon area!\n";
                         }
                         //else
                         {
-                            BestCost = tmpHullArea;
+                            BestCost = CurrentCost;
                             BestAngle = angle;
                             BestTranslation = trans_rot_p->getTranslation();
                             Best_i = i;
@@ -1703,10 +1730,10 @@ Point RefPoint;
                             Best_Poly = FixedPolygon;
                             if ( debug_level > 1 )
                             {
-                                OutDebug << "New best found placing polygon " << FloatPolygon << "\n";
-                                OutDebug << "  Vertex " << j << " on vertex " << i << " of polygon " <<  FixedPolygon << "\n";
-                                OutDebug << " Rotation=" << round(angle*180/M_PI) << " Translation " << BestTranslation << " from " << *(rot_p->GetVertex(j)) << " to " <<  *(curFixed->GetVertex(i)) << "\n";
-                                OutDebug << "  Hull area:" << tmpHullArea << " Polygon area:" << tmpPolygonArea << "\n";
+                                OutDebug << "L" << LevelOptimize << ", new best found placing polygon " << FloatPolygon << "\n";
+                                OutDebug << "      Vertex " << j << " on vertex " << i << " of polygon " <<  FixedPolygon << "\n";
+                                OutDebug << "      Rotation=" << round(angle*180/M_PI) << " Translation " << BestTranslation << " from " << *(rot_p->GetVertex(j)) << " to " <<  *(curFixed->GetVertex(i)) << "\n";
+                                OutDebug << "      Hull area:" << tmpHullArea << "  Cost:" << CurrentCost << " Polygon area:" << tmpPolygonArea << "\n";
 
                             }
                         }
@@ -1758,7 +1785,7 @@ Point RefPoint;
     Cost = BestCost;
     if ( debug_level > 0 )
     {
-        OutDebug << "Level " << LevelOptimize << ": Applying best move : " << BestTranslation << "/" << round(BestAngle*180/M_PI) << "° to polygon " << FloatPolygon << " will place vertex " << Best_j << " on vertex " << Best_i << " of polygon " << Best_Poly << "\n";
+        OutDebug << "Level " << LevelOptimize << ": Applying best move : " << BestTranslation << "/" << round(BestAngle*180/M_PI) << "° to polygon " << FloatPolygon  << "(" << WorkingFloatingEntry->id << ") will place vertex " << Best_j << " on vertex " << Best_i << " of polygon " << Best_Poly << "\n";
         OutDebug << "  new hull with " << FixedHull.size() << " vertices, area " << HullArea(FixedHull) << " Fixed polygon area " << FixedArea <<"\n";
         OutDebug << "  LargeConvexHull area :" << WorkingFloatingEntry->LargeConvexHull->area() << " Cost= " << Cost << "\n";
         OutDebug << "  CurFloating.Size=" << CurFloating.size() << "\n";
@@ -1779,7 +1806,7 @@ Point A;
 
     if ( FirstPos < CenterLeft)     //  Top
     {
-        A.y = 0;
+        A.y = MARGIN_PAGE;
     }
     else if ( FirstPos < BottomLeft )
     {
@@ -1787,11 +1814,11 @@ Point A;
     }
     else
     {
-        A.y = SheetSizeY - ySize;           //  Bottom
+        A.y = SheetSizeY - ySize - MARGIN_PAGE;           //  Bottom
     }
     if ( (FirstPos &3) == 0 )     //  Left
     {
-        A.x = 0;
+        A.x = MARGIN_PAGE;
     }
     else if ( (FirstPos &3) == 1 )     //  Center ?
     {
@@ -1799,7 +1826,7 @@ Point A;
     }
     else
     {
-        A.x = SheetSizeX - xSize;           //  Right
+        A.x = SheetSizeX - xSize - MARGIN_PAGE;           //  Right
     }
     return A;
 }
@@ -1891,8 +1918,10 @@ int CCW_B;
             return FAIL_VERTEX_IN_POLYGON | FixedBit;
         //  Then check for all vertices of polygon
         int idx_common_vertex_B = -1;
+        int idx_common_vertex_CurPoly = -1;
         int SegmentIndex = -1;
-        for ( int i = 0; i < CurPoly->nVertices; i++ )
+        //  For each vertex of CurPoly, so stop at CurPoly->nVertices - 1 to avoid double check of vertex 0
+        for ( int i = 0; i < CurPoly->nVertices - 1; i++ )
         {
             nbPointInPoly++;
             int ResInPoly = path->PlacedPolygon->isInPoly(CurPoly->GetVertex(i), &SegmentIndex);
@@ -1910,29 +1939,52 @@ int CCW_B;
             if ( ResInPoly < 0  )
             {
                 //  Compute difference between indices of common vertices of polygon B ( the biggest one )
-                if ( idx_common_vertex_B >= 0 )
+                if ( idx_common_vertex_B >= 0 && idx_common_vertex_B + ResInPoly != 0)  //  Check there is already a common vertex and this is NOT the same
                 {
                     int diffB = -ResInPoly - idx_common_vertex_B;
-                    if (diffB < 0) diffB += path->PlacedPolygon->nVertices;
+                    if (diffB < 0) diffB += path->PlacedPolygon->nVertices - 1;
+                    // diffB gives the distance (in number of vertices) between the 2 vertices of the biggest polygon (not CutPoly)
+                    //  If this distance is less than half of number of vertices, this is CCW
                     CCW_B = (2*diffB > path->PlacedPolygon->nVertices);
                     // If at least 2 common vertex, one should be CCW and other one CW
-                    //  So CCW_B should be true
-                    if (CCW_B == 0 )
+                    int CCW_CurPoly = 2*(i-idx_common_vertex_CurPoly) > CurPoly->nVertices;
+                    //  SO exclusive OR of CCW_B and CCW_CurPoly should be true
+                    if ((CCW_B ^ CCW_CurPoly) == 0 )
                     {
-                        if ( debug_level > 1 )
+                        if ( debug_level > 2 )
                         {
-                            OutDebug << "Placement impossible , polygon share at least 2 vertices with polygon " << PlacedPolygon << ", vertices are " <<  idx_common_vertex_B << " and " << -ResInPoly << "\n";
+                            OutDebug << "Placement impossible , polygon share at least 2 vertices with polygon " << PlacedPolygon << ", vertices are " <<  idx_common_vertex_B << " and " << -ResInPoly - 1 << "\n";
                         }
                         return FAIL_VERTEX_IN_POLYGON | FixedBit;
                     }
                 }
-                idx_common_vertex_B = -ResInPoly;
+                idx_common_vertex_B = -ResInPoly - 1;       //  Store common vertex for following loops
+                idx_common_vertex_CurPoly = i;
             }
         }
     }
+    //  Then checks if some vertex of placed polygons lies in CurPoly
 
     PlacedPolygon = 0;
     FixedVertex = 0;
+    for (std::list<NSVGpath *>::iterator it=FixedPath.begin(); it != FixedPath.end(); ++it, PlacedPolygon++)
+    {
+        NSVGpath *path = *it;
+        if ( path->isFixed )
+            FixedBit = FIXED_BIT;
+        else
+            FixedBit = 0;
+        FixedVertex += path->LargePolygon->nVertices;
+        if ( Cached != 0 && path->isFixed && Cached > FixedVertex) continue;       //  No need to reprocess fixed polygons already computed
+        int SegmentIndex = -1;
+        for ( int i = 0; i < path->PlacedPolygon->nVertices; i++ )
+        {
+            nbPointInPoly++;
+            int ResInPoly = CurPoly->isInPoly(path->PlacedPolygon->GetVertex(i), &SegmentIndex);
+            if ( ResInPoly > 0 )        //  Vertex in polygon, bad placement
+                return FAIL_VERTEX_IN_POLYGON | FixedBit;
+        }
+    }
     //  Last, also checks if polygon overlap with segment crossing, without point inclusion.
     //  Check if one segment of CUrPoly intersect with one segment of one of the fixed polys
     for (std::list<NSVGpath *>::iterator it=FixedPath.begin(); it != FixedPath.end(); ++it, PlacedPolygon++)
@@ -2053,7 +2105,8 @@ int NotPlaced = 0;
             NewFixed->isFixed = true;
             FixedPath.push_back(NewFixed);    //    Put it in fixed list
             //  Could (and should) free cache memory for this one
-            delete NewFixed->CachePoly;
+            if ( NewFixed->CachePoly != NULL )
+                delete NewFixed->CachePoly;
             NewFixed->CachePoly = NULL;
             FixedArea += NewFixed->LargePolygon->area();
             FixedPolyHull = NewFixed->LargeConvexHull;
@@ -2170,7 +2223,7 @@ Point RefPoint;
     double tmpPolygonArea = FixedArea + WorkingFloatingEntry->LargePolygon->area();
     int nPreviousVertices = getFixedNbVertex(FixedList);            //  Number of vertices of all polygons before this one
     //  Build a cache object which will speed up computation if not yet present
-    if ( WorkingFloatingEntry->CachePoly == NULL )
+    if ( UseCache && WorkingFloatingEntry->CachePoly == NULL )
     {
         //  Use 4 for num_rot because 4 possibilities will be tested, even if 2 at most are possible.
         WorkingFloatingEntry->CachePoly = new CachePosition(WorkingFloatingEntry->LargePolygon->nVertices, 4, nPreviousVertices);
@@ -2213,7 +2266,9 @@ Point RefPoint;
                     //  Use cache if available
 
                     trans_rot_p = NULL;
-                    int Cached = WorkingFloatingEntry->CachePoly->isOKPlacedFreeRot(iVFloat, iRot, iFixedVertex, &trans_rot_p);
+                    int Cached = 0;
+                    if ( UseCache )
+                        WorkingFloatingEntry->CachePoly->isOKPlacedFreeRot(iVFloat, iRot, iFixedVertex, &trans_rot_p);
 //                    Cached = 0;
                     if ( Cached < 0 )       //  Cache says impossible !
                     {
@@ -2238,7 +2293,7 @@ Point RefPoint;
                         if ( Res == 0)
                         {
                             //  Impossible, invalid cache entry
-                            WorkingFloatingEntry->CachePoly->addOKPlacedFreeRot(iVFloat, iRot, iFixedVertex, NULL);
+                            if ( UseCache ) WorkingFloatingEntry->CachePoly->addOKPlacedFreeRot(iVFloat, iRot, iFixedVertex, NULL);
                             if ( debug_level > 2 )
                                 OutDebug << "ComputeFreeRotAngle: Placement polygon " << FloatPolygon << " vertex " << iVFloat << " with rotation " << angle << "(" << iRot << ")" << " on vertex " << iVFixed << " of Polygon " << FixedPolygon << " impossible " << *curFixed->GetVertex(iVFixed) << ", reason angle mismatch\n";
                             continue;    //  Not possible goto next without further processing
@@ -2268,7 +2323,8 @@ Point RefPoint;
                         //  If impossible due to conflict with fixed polygon, invalidate cache entry
                         if ( path->isFixed && (Reason & FIXED_BIT) != 0 )
                         {
-                            WorkingFloatingEntry->CachePoly->addOKPlacedFreeRot(iVFloat, iRot, iFixedVertex, NULL);
+                            if ( UseCache )
+                                WorkingFloatingEntry->CachePoly->addOKPlacedFreeRot(iVFloat, iRot, iFixedVertex, NULL);
                             delete trans_rot_p;
                             trans_rot_p = NULL;
                         }
@@ -2284,8 +2340,11 @@ Point RefPoint;
                     }
                     if ( path->isFixed && Cached == 0)        //  If current vertex belongs to a fixed path, cache value
                     {
-                        WorkingFloatingEntry->CachePoly->addOKPlacedFreeRot(iVFloat, iRot, iFixedVertex, trans_rot_p);
-                        Cached = 1;
+                        if ( UseCache )
+                        {
+                            WorkingFloatingEntry->CachePoly->addOKPlacedFreeRot(iVFloat, iRot, iFixedVertex, trans_rot_p);
+                            Cached = 1;
+                        }
                     }
                     //  Compute cost function
                     //  We will use only the Hull area.
