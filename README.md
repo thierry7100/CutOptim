@@ -89,18 +89,18 @@ Usage:
   -l, --optimizing_level 1      Optimizing level, process list_size elements
                                 together
       --debug_level 0           Level of debug info in specific debug file
-      --debug_file              Generate debug info from inkscape (default:
-                                true)
+      --debug_file              Generate debug info from inkscape (default: true)
   -k, --original                Output Original layer
   -n, --nested                  Keep nested path together (default: true)
   -y, --layer_output 0          Output internal layers : 1 Input layer, 2
                                          Polygon, 4 Large polygon, 8 Hull layer, 16 Placed
-                                Polygon layer, OR these values to output
-                                multiple layers
+                                Polygon layer, OR these values to output multiple layers
   -a, --angle 90.0              Rotation step
   -r, --free_rot                allow free rotation (default: true)
-  -p, --firstpos Position of largest object on the sheet
-                                Position of largest object
+  -c, --use_cache               Set to 1 to enable cache. Cache operation is currently bugged and should NOT be used, default is 0
+  -q  --rect_cost"              Add overall rectangle area * factor to cost function. Default factor is 0.0
+  -p, --firstpos                Position of largest object on the sheet
+                                
 
 ##Next steps
 
