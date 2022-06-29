@@ -29,7 +29,9 @@ class SvgDoc
         void ComputeConvexHulls();
         double Optimize(double StepAngle, int OptimizingLevel, int FirstPos, int Flag_File);
         double OptimizeFreeRot(int OptimizingLevel, int FirstPos, int Flag_File);
-        void setDebugLevel(int level) { debug_level = level; OutDebug.open("Debug_CutOptim.txt"); }
+        void setDebugLevel(int level, string DebugFileName) { debug_level = level; OutDebug.open(DebugFileName); }
+        void setUseCache(int Val) { UseCache = Val;}
+        void setRectCost(double Val) { RectCostFactor = Val;}
 
         int WriteDoc(string &FileName, int Flag_File, int Output_Layers);
 
@@ -56,8 +58,10 @@ class SvgDoc
         int getFixedNbVertex(std::list<NSVGpath *> FixedList);
         Point ComputeRefPoint(int FirstPos, int xSize, int ySize);
 
+        double RectCostFactor;
         string Name;
         int debug_level;
+        int UseCache;
 
         ofstream OutDebug;
         clock_t StartClock;
