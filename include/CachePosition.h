@@ -17,7 +17,7 @@ class CachePosition
         size_t sizeCacheEntry2;
         size_t memCache;
         int currentIdxCache;
-        Polygon **CachePlaced;          //  Polygon cached, if imposiible set to 0
+        Polygon **CachePlaced;          //  Polygon cached, if impossible set to 0
         int *FixedPerRot;               //  Index of cached value per rotation. Used when vertices are added (new polygons)
 
     private:
