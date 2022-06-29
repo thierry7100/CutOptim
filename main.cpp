@@ -28,12 +28,15 @@ cxxopts::ParseResult parse(int argc, char* argv[])
         ("positional", "File to be processed", cxxopts::value<std::vector<std::string>>())
         ("h,help", "Print help")
         ("d,distance", "Min distance between paths to be cut", cxxopts::value<double>(), "1.0")
+        ("q,rect_cost", "Overall Rectangle cost", cxxopts::value<double>(), "0.0")
         ("m,max_length", "Max length of one segment, break than longer", cxxopts::value<double>(), "1000.0")
         ("l,optimizing_level", "Optimizing level, process list_size elements together", cxxopts::value<int>(), "1")
         ("debug_level", "Level of debug info in specific debug file", cxxopts::value<int>(), "0")
         ("debug_file", "Generate debug info from inkscape", cxxopts::value<bool>()->default_value("true"))
+        ("df_name", "Name of debug file", cxxopts::value<std::string>()->default_value("Debug_CutOptim.txt"))
         ("k,original", "Output Original layer", cxxopts::value<bool>()->default_value("false"))
         ("n,nested", "Keep nested path together", cxxopts::value<bool>()->default_value("true"))
+        ("c,use_cache", "USe cache to speed up processing", cxxopts::value<bool>()->default_value("false"))
         ("y,layer_output", "Output internal layers : 1 Input layer, 2 Polygon, 4 Large polygon, 8 Hull layer, 16 Placed Polygon layer, OR these values to output multiple layers", cxxopts::value<int>(), "0")
         ("a,angle", "Rotation step", cxxopts::value<double>(), "90.0")
         ("r,free_rot", "allow free rotation", cxxopts::value<bool>()->default_value("true"))
@@ -106,13 +109,16 @@ string InputFileName;
 string OutputFileName;
 double MinCutDistance = 1.0;
 double StepAngle = 0;
+double rect_cost = 0.0;
 int Flag_file = 0;
 int debug_level = 0;
 int Output_Layer = 0;
 int KeepNested = 1;
 int OptimizingLevel = 1;
 int FirstPos = CenterCenter;
+int UseCache = 0;
 bool Flag_free_rot = 1;
+string debug_file_name = "Debug_CutOptim.txt";
 
 double max_segment_length = 1000.0;
 #ifdef UNDEF
@@ -147,6 +153,8 @@ double max_segment_length = 1000.0;
     }
     if (result.count("max_length"))
         max_segment_length = result["max_length"].as<double>();
+    if (result.count("rect_cost"))
+        rect_cost = result["rect_cost"].as<double>();
     if (result.count("debug_level"))
         debug_level = result["debug_level"].as<int>();
     if (result.count("layer_output"))
@@ -161,10 +169,20 @@ double max_segment_length = 1000.0;
     {
         FirstPos = ConvertPos(result["firstpos"].as<string>() );
     }
+    if ( result.count("df_name"))
+    {
+        debug_file_name = result["df_name"].as<string>();
+    }
     if (result.count("nested"))
     {
         KeepNested = result["nested"].as<bool>();
     }
+
+    if (result.count("use_cache"))
+    {
+        UseCache = result["use_cache"].as<bool>();
+    }
+
     if (result.count("free_rot"))
     {
         Flag_free_rot = result["free_rot"].as<bool>();
@@ -183,13 +201,17 @@ double max_segment_length = 1000.0;
         cout << "Optimizing level = " << OptimizingLevel << std::endl;
         cout << "Max_segment_length = " << max_segment_length << std::endl;
         cout << "Use free rotation = " << Flag_free_rot << std::endl;
+        cout << "Rectangle cost factor = " << rect_cost << std::endl;
         cout << "Keep nested paths = " << KeepNested << std::endl;
+        cout << "Use Cache = " << UseCache << std::endl;
     }
 
       //    Read and process input file
 
     SvgDoc InputSVG(InputFileName);
-    InputSVG.setDebugLevel(debug_level);
+    InputSVG.setDebugLevel(debug_level, debug_file_name);
+    InputSVG.setUseCache(UseCache);
+    InputSVG.setRectCost(rect_cost);
     if ( InputSVG.SvgData == NULL )
     {
     cerr << " No input to process aborting \n";
