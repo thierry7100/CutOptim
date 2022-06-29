@@ -525,20 +525,33 @@ int inside = false;
     if ( lP.y < BoundingBox.A.y - precision/3) return false;       //  Outside bounding box, impossible
     if ( lP.x > BoundingBox.B.x + precision/3) return false;       //  Outside bounding box, impossible
     if ( lP.y > BoundingBox.B.y + precision/3) return false;       //  Outside bounding box, impossible
-    //  If the point is a vertex, return true.
-    //  Also checks if the point is on one edge, in this case return true
+    //  If the point is a vertex, return false.
+    //  Also checks if the point is on one edge, in this case return false
     lastX = _Vertices[0].x;
     lastY = _Vertices[0].y;
-    if ( fabs(lastX-lP.x) + fabs(lastY-lP.y) < precision ) return false;    //  On vertex 0
+    if ( fabs(lastX-lP.x) + fabs(lastY-lP.y) < precision ) return -1;    //  On vertex 0
     for (int i = 1; i < nVertices; i++)
     {
         if ( fabs(_Vertices[i].x-lP.x) < 50*precision && fabs(_Vertices[i].y-lP.y) < 50*precision) return -(i+1);      //  this is a vertex, return negative value
         //  Check if lP is on edge between LastX,LastY and _Vertice[i]
         if ( isBetween(lP.x, lastX, _Vertices[i].x) && isBetween(lP.y, lastY, _Vertices[i].y) )
         {
-        //  Could be on edge, check if points are aligned : compute determinant
-            double det = (lP.x - lastX)*(_Vertices[i].y - lastY) - (lP.y - lastY)*(_Vertices[i].x - lastX);
-            if ( fabs(det) < precision )
+            //  Could be on edge, check if points are aligned : compute determinant
+            double deltaX =_Vertices[i].x - lastX;
+            double deltaY =_Vertices[i].y - lastY;
+            double det = (lP.x - lastX)*deltaY - (lP.y - lastY)*deltaX;
+            //  With infinite precision, the determinant is null when the points are aligned
+            //  Here, we don't have infinite precision (rounding)
+            //  It could be quite complex to determine the alignment
+            //  Say if fabs(det) is lower than precision*fabs(deltaX + deltaY)
+            double max_error_det = 2*(fabs(deltaX) + fabs(deltaY));
+#define OUTPUT_DETERMINANT 0
+
+#if OUTPUT_DETERMINANT > 0
+            if ( fabs(det) < 10 )
+                cout << "det =" << det << ", deltaX=" << deltaX << ", deltaY=" << deltaY << ", computed precision=" << max_error_det*precision<< '\n';
+#endif // OUTPUT_DETERMINANT
+            if ( fabs(det) < max_error_det * precision )
             {
                 if ( SegmentIdx != nullptr ) *SegmentIdx = i - 1; //    Between i - 1 and i.
                 return false;      //  On edge, not inside !
@@ -582,8 +595,7 @@ int inside = false;
                         }
                         //  In this case intersect only if curY-LastY has the same sign as DiffY
                         double sign = -1;
-                        if ( i < nVertices - 1)
-                            sign = (curY - lastY) * DiffY;
+                        sign = (curY - lastY) * DiffY;
                         if ( sign > 0 && lP.x <= curX )
                             inside = !inside;
                     }
