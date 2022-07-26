@@ -945,44 +945,44 @@ void SvgDoc::WriteHeader(ostream &Out)
     Out << "<!-- Created with CutOptim (http://www.fablab-lannion.org/) -->\n";
     Out << "\n";
     Out << "<svg\n";
-    Out << "   xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n";
-    Out << "   xmlns:cc=\"http://creativecommons.org/ns#\"\n";
-    Out << "   xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\"\n";
-    Out << "   xmlns:svg=\"http://www.w3.org/2000/svg\"\n";
-    Out << "   xmlns=\"http://www.w3.org/2000/svg\"\n";
-    Out << "   xmlns:sodipodi=\"http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd\"\n";
-    Out << "   xmlns:inkscape=\"http://www.inkscape.org/namespaces/inkscape\"\n";
-    Out << "   width=\"" << round(SheetSizeX) << "mm\"" << endl;
+    Out << "   sodipodi:docname=\"" << Name << "\"" << endl;
+    Out << "   id=\"svg8\"\n";
+    Out << "   version=\"1.1\"\n";
+    Out << "   viewBox=\"0 0 " << round(SheetSizeX) << " " << round(SheetSizeY) << "\"" << endl;
     Out << "   height=\"" << round(SheetSizeY) << "mm\"\n";
-    Out << "      viewBox=\"0 0 " << round(SheetSizeX) << " " << round(SheetSizeY) << "\"" << endl;
-    Out << "      version=\"1.1\"\n";
-    Out << "      id=\"svg8\"\n";
-    Out << "      sodipodi:docname=\"" << Name << "\">" << endl;
-    Out << "     <defs\n";
-    Out << "        id=\"defs2\" />\n";
-    Out << "     <sodipodi:namedview\n";
-    Out << "        id=\"base\"\n";
-    Out << "        pagecolor=\"#ffffff\"\n";
-    Out << "        bordercolor=\"#666666\"\n";
-    Out << "        borderopacity=\"1.0\"\n";
-    Out << "        inkscape:pageopacity=\"0.0\"\n";
-    Out << "        inkscape:pageshadow=\"2\"\n";
-    Out << "        inkscape:document-units=\"mm\"\n";
-    Out << "        inkscape:current-layer=\"Placed_Layer\"\n";
-    Out << "        showgrid=\"false\"\n";
-    Out << "        inkscape:window-maximized=\"1\" />\n";
-    Out << "     <metadata\n";
-    Out << "        id=\"metadata5\">\n";
-    Out << "       <rdf:RDF>\n";
-    Out << "         <cc:Work\n";
-    Out << "            rdf:about=\"\">\n";
-    Out << "           <dc:format>image/svg+xml</dc:format>\n";
-    Out << "           <dc:type\n";
-    Out << "              rdf:resource=\"http://purl.org/dc/dcmitype/StillImage\" />\n";
+    Out << "   width=\"" << round(SheetSizeX) << "mm\"" << endl;
+    Out << "   xmlns:inkscape=\"http://www.inkscape.org/namespaces/inkscape\"\n";
+    Out << "   xmlns:sodipodi=\"http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd\"\n";
+    Out << "   xmlns=\"http://www.w3.org/2000/svg\"\n";
+    Out << "   xmlns:svg=\"http://www.w3.org/2000/svg\"\n";
+    Out << "   xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\"\n";
+    Out << "   xmlns:cc=\"http://creativecommons.org/ns#\"\n";
+    Out << "   xmlns:dc=\"http://purl.org/dc/elements/1.1/\">\n";
+    Out << "  <defs\n";
+    Out << "     id=\"defs2\" />\n";
+    Out << "  <sodipodi:namedview\n";
+    Out << "     id=\"base\"\n";
+    Out << "     pagecolor=\"#ffffff\"\n";
+    Out << "     bordercolor=\"#666666\"\n";
+    Out << "     borderopacity=\"1.0\"\n";
+    Out << "     inkscape:pageopacity=\"0.0\"\n";
+    Out << "     inkscape:pageshadow=\"2\"\n";
+    Out << "     inkscape:document-units=\"mm\"\n";
+    Out << "     inkscape:current-layer=\"Placed_Layer\"\n";
+    Out << "     showgrid=\"false\"\n";
+    Out << "     inkscape:window-maximized=\"1\" />\n";
+    Out << "  <metadata\n";
+    Out << "     id=\"metadata5\">\n";
+    Out << "     <rdf:RDF>\n";
+    Out << "       <cc:Work\n";
+    Out << "          rdf:about=\"\">\n";
+    Out << "         <dc:format>image/svg+xml</dc:format>\n";
+    Out << "         <dc:type\n";
+    Out << "            rdf:resource=\"http://purl.org/dc/dcmitype/StillImage\" />\n";
     Out << "           <dc:title></dc:title>\n";
-    Out << "         </cc:Work>\n";
-    Out << "       </rdf:RDF>\n";
-    Out << "     </metadata>\n";
+    Out << "       </cc:Work>\n";
+    Out << "     </rdf:RDF>\n";
+    Out << "  </metadata>\n";
 }
 
 void SvgDoc::WriteFile(ostream &Out, int output_layers)
@@ -1403,7 +1403,7 @@ int num_rot = int((2*M_PI-0.001) / StepAngle) + 1;
         if ( Flag_file )
         {
             StartLevel = clock();
-            cout << "Polygon " << idxPoly << ", id(" << NewFixed->id << ")  Not placed " << NotPlaced << "  Elapsed time " << ((double)1000.0*(StartLevel - LastLevel))/CLOCKS_PER_SEC << "\n";
+            cout << "Polygon " << idxPoly << "  Not placed " << NotPlaced << "  Elapsed time " << ((double)1000.0*(StartLevel - LastLevel))/CLOCKS_PER_SEC << "\n";
 #if CHECK_MEM > 0
             cout << " mem Poly_empty=" << nbEmptyPoly << "/" << nbCreatedEmptyPoly <<  " mem Poly_Vector=" << nbVectorPoly << "/" << nbCreatedVectorPoly;
             cout <<  " Rot_Poly=" << nbRotatedPoly << "/" << nbCreatedRotatedPoly;
@@ -1457,7 +1457,9 @@ int num_rot = int((2*M_PI-0.001) / StepAngle) + 1;
 //  Return the best placement (least cost) for the FIRST element in CurFloating, or NULL if it could not be placed.
 //  For each element in CurFloating, for all possible angles, try to place a floating polygon on a vertex of a fixed one (or semi fixed indeed)
 //  This is a brute force algorithm !!
-//  Try to keep running time reasonnable by trying only possible placements.
+//  Try to keep running time reasonable by trying only possible placements.
+
+#define DEBUG_CACHE  0
 
 NSVGpath *SvgDoc::OptimizeLevel(Polygon *FixedPolyHull, std::list<NSVGpath *> FixedList, std::list<NSVGpath *> CurFloating, int num_rot, double StepAngle, double FixedArea,
                                 double &Cost, double InBestCost, int FloatPolygon, int nbFixedPoly, int LevelOptimize)
@@ -1541,42 +1543,29 @@ Point RefPoint;
             // For each vertex of this placed polygon
             for ( int i = 0; i < curFixed->nVertices-1; iFixedVertex++, i++)
             {
+                if ( debug_level > 0 )
+                    OutDebug << std::flush;
                 //  Try all vertices of the floating polygon, and select the best
                 for (int j = 0; j < rot_p->nVertices-1; j++)
                 {
-#ifdef UNDEF
-//                   static int DebugPassage;
-//                    cout << "Passage=" << DebugPassage << " iRot=" << iRot << " Fixed=" << FixedPolygon << " i=" << i << " j=" << j << " rot_p->nVertices=" << rot_p->nVertices << "\n";
-//                    if ( iRot == 0 && i == 1 && j == 3 )
-//                    {
-//                        DebugPassage++;
-//                        cout << " Test rot_p (" << rot_p << ") rot_p->nVertices=" << rot_p->nVertices << "\n";
-//                    }
-                    //cout << "Trying vertex " << j << " of polygon " << FloatPolygon << " on vertex " << i << " of polygon " << FixedPolygon << "\n";
-                    if ( FloatPolygon == 5 && iRot == 4 && j == 4 && i == 0 && FixedPolygon == 4 )
-                    {
-                        if ( debug_level > 1 )
-                        {
-                            OutDebug << "Test Check Angles, align vertex " << j << " on vertex " << i << " : " << *curFixed->GetVertex(i) << "\n";
-                        }
-                    }
-#endif
                     //  Use cache if available
                     trans_rot_p = NULL;
                     int Cached = 0;
-                    if ( UseCache )
-                        Cached = WorkingFloatingEntry->CachePoly->isOKPlaced(j, iRot, iFixedVertex, &trans_rot_p);
-#ifdef UNDEF
-                    if (FloatPolygon == 2 && iRot == 1 && iFixedVertex == 2 && j == 3 )
+                    //  If we use cache and only if the path is fixed, look for cache status
+                    if ( UseCache && path->isFixed )
                     {
-                        OutDebug << "Vertex 3 of polygon 2 on Vertex 2 of Polygon 0, Cached =" << Cached << "  trans_rot_p = " << trans_rot_p << "\n";
+                        Cached = WorkingFloatingEntry->CachePoly->isOKPlaced(j, iRot, iFixedVertex, &trans_rot_p);
+#if DEBUG_CACHE > 0
+                        OutDebug << "isOKPlaced(idx=" << j << ", iRot=" << iRot << ", iFixedVertex=" << iFixedVertex << ") return " << Cached << '\n' << std::flush;
+#endif // DEBUG_CACHE
                     }
-#endif
+#ifdef UNDEF
                     if ( FloatPolygon == 2 && iRot == 1 && FixedPolygon == 0 && i == 0 && j == 1)
                     {
                         OutDebug << "Breakpoint reached!\n";
                         OutDebug.flush();
                     }
+#endif
                     if ( Cached < 0 )       //  Cache says impossible !
                     {
                         CacheHit_KO++;
@@ -1587,6 +1576,7 @@ Point RefPoint;
                     else if ( Cached == 0 )
                     {
                         CacheMiss++;        // Not yet in cache, check angles first
+                        //  No need to check angles when cached, because we test against a fixed polygon, and this test is included in the cache result
                         nbCheckAngles++;
                         if ( rot_p->nVertices == 0 )
                         {
@@ -1594,12 +1584,18 @@ Point RefPoint;
                         }
                         if (CheckAngles(rot_p, j, curFixed, i) == 0)
                         {
-                            //  Impossible, invalid cache entry
-                            if ( UseCache )
+                            //  Impossible, invalid cache entry if polygon is fixed
+                            if ( UseCache && path->isFixed )
+                            {
                                 WorkingFloatingEntry->CachePoly->addOKPlaced(j, iRot, iFixedVertex, NULL);
+#if DEBUG_CACHE > 0
+                                OutDebug << "CheckAngle NOK, invalidate entry (idx=" << j << ", iRot=" << iRot << ", iFixedVertex=" << iFixedVertex << ")\n" << std::flush;
+#endif // DEBUG_CACHE
+
+                            }
                             if ( debug_level > 2 )
                                 OutDebug << "Placement polygon " << FloatPolygon << " vertex " << j << " on vertex " << i << " of Polygon " << FixedPolygon << " impossible " << *curFixed->GetVertex(i) << ", reason angle mismatch\n";
-                            continue;    //  Not possible goto next without further processing
+                            continue;    //  Not possible go to next without further processing
                         }
                         //  Compute polygon translated and rotated...
                         trans_rot_p = rot_p->Translate(curFixed->GetVertex(i), j);
@@ -1620,11 +1616,18 @@ Point RefPoint;
                         //  If impossible due to conflict with fixed polygon, invalidate cache entry
                         if ( path->isFixed && (Reason & FIXED_BIT) != 0 )
                         {
-                            if ( UseCache ) WorkingFloatingEntry->CachePoly->addOKPlaced(j, iRot, iFixedVertex, NULL);
+                            if ( UseCache )
+                            {
+                                WorkingFloatingEntry->CachePoly->addOKPlaced(j, iRot, iFixedVertex, NULL);
+#if DEBUG_CACHE > 0
+                                OutDebug << "PlacementNotPossible NOK, invalidate entry (idx=" << j << ", iRot=" << iRot << ", iFixedVertex=" << iFixedVertex << ")\n" << std::flush;
+#endif // DEBUG_CACHE
+                            }
+                            //  And free memory of polygon translated / rotated
                             delete trans_rot_p;
                             trans_rot_p = NULL;
                         }
-                        //  Free memory associated with polygon
+                        //  Free memory associated with polygon only if not cached
                         if ( Cached == 0 && trans_rot_p != NULL )
                         {
                             delete trans_rot_p;
@@ -1643,6 +1646,9 @@ Point RefPoint;
                         if ( UseCache )
                         {
                             WorkingFloatingEntry->CachePoly->addOKPlaced(j, iRot, iFixedVertex, trans_rot_p);
+#if DEBUG_CACHE > 0
+                            OutDebug << "PlacementNotPossible OK, validate entry (idx=" << j << ", iRot=" << iRot << ", iFixedVertex=" << iFixedVertex << ")\n" << std::flush;
+#endif // DEBUG_CACHE
                             Cached = 1;
                         }
 #ifdef UNDEF
@@ -1886,20 +1892,17 @@ int FixedBit = 0;
 int FixedVertex = 0;
 int CCW_B;
 
-    if ( Cached == 0 )      //  If cached, no need to recompute !
-    {
-        //  If bounding box is outside the sheet, return false
-        Rectangle BBox = CurPoly->GetBoundingBox();
-        if ( BBox.A.x < 0 ) return FAIL_OUTSIDE_SHEET | FIXED_BIT;
-        if ( BBox.A.y < 0 ) return FAIL_OUTSIDE_SHEET | FIXED_BIT;
-        if ( BBox.B.x > SheetSizeX ) return FAIL_OUTSIDE_SHEET | FIXED_BIT;
-        if ( BBox.B.y > SheetSizeY ) return FAIL_OUTSIDE_SHEET | FIXED_BIT;
-        //  If BBox outside OverAll return true
-        if ( BBox.A.x >= OverAll->B.x ) return 0;
-        if ( BBox.A.y >= OverAll->B.y ) return 0;
-        if ( BBox.B.x <= OverAll->A.x ) return 0;
-        if ( BBox.B.y <= OverAll->A.y ) return 0;
-    }
+    //  If bounding box is outside the sheet, return false
+    Rectangle BBox = CurPoly->GetBoundingBox();
+    if ( BBox.A.x < 0 ) return FAIL_OUTSIDE_SHEET | FIXED_BIT;
+    if ( BBox.A.y < 0 ) return FAIL_OUTSIDE_SHEET | FIXED_BIT;
+    if ( BBox.B.x > SheetSizeX ) return FAIL_OUTSIDE_SHEET | FIXED_BIT;
+    if ( BBox.B.y > SheetSizeY ) return FAIL_OUTSIDE_SHEET | FIXED_BIT;
+    //  If BBox outside OverAll return true
+    if ( BBox.A.x >= OverAll->B.x ) return 0;
+    if ( BBox.A.y >= OverAll->B.y ) return 0;
+    if ( BBox.B.x <= OverAll->A.x ) return 0;
+    if ( BBox.B.y <= OverAll->A.y ) return 0;
 
     PlacedPolygon = 0;
     //  Now checks if some vertex of CurPoly lies into a polygon from the list
@@ -1908,11 +1911,13 @@ int CCW_B;
     {
         NSVGpath *path = *it;
         if ( path->isFixed )
+        {
             FixedBit = FIXED_BIT;
+            FixedVertex += path->LargePolygon->nVertices;
+        }
         else
             FixedBit = 0;
-        FixedVertex += path->LargePolygon->nVertices;
-        if ( Cached != 0 && path->isFixed && Cached > FixedVertex) continue;       //  No need to reprocess fixed polygons already computed
+        if ( Cached != 0 && path->isFixed && Cached > FixedVertex) continue;     //  No need to reprocess fixed polygons which are already computed
         //  Check if start point of real path is inside polygon. This test is mandatory to avoid placing two polygons at the same place !
         if ( path->PlacedPolygon->isInPoly(RefPoint) > 0)
             return FAIL_VERTEX_IN_POLYGON | FixedBit;
@@ -1930,7 +1935,6 @@ int CCW_B;
             //  If point is on an edge of PlacedPolygon, check angles to verify that this is possible
             if ( ResInPoly == 0 && SegmentIndex >= 0 )
             {
-                //cout << "Point " << i << "=" << *CurPoly->GetVertex(i) << " is on Segment " << SegmentIndex << " of polygon. Segment is " <<  path->PlacedPolygon->GetSegment(SegmentIndex) << "\n";
                 //  If impossible, the edge will be inside the Placed Polygon.
                 if ( !CheckAnglesOnEdge(CurPoly, i, path->PlacedPolygon, SegmentIndex) )
                     return FAIL_EDGE_INTERSECT | FixedBit;
@@ -1947,6 +1951,7 @@ int CCW_B;
                     //  If this distance is less than half of number of vertices, this is CCW
                     CCW_B = (2*diffB > path->PlacedPolygon->nVertices);
                     // If at least 2 common vertex, one should be CCW and other one CW
+                    //  Compute if CurPoly vertex are CW or CCW
                     int CCW_CurPoly = 2*(i-idx_common_vertex_CurPoly) > CurPoly->nVertices;
                     //  SO exclusive OR of CCW_B and CCW_CurPoly should be true
                     if ((CCW_B ^ CCW_CurPoly) == 0 )
@@ -1971,10 +1976,12 @@ int CCW_B;
     {
         NSVGpath *path = *it;
         if ( path->isFixed )
+        {
             FixedBit = FIXED_BIT;
+            FixedVertex += path->LargePolygon->nVertices;
+        }
         else
             FixedBit = 0;
-        FixedVertex += path->LargePolygon->nVertices;
         if ( Cached != 0 && path->isFixed && Cached > FixedVertex) continue;       //  No need to reprocess fixed polygons already computed
         int SegmentIndex = -1;
         for ( int i = 0; i < path->PlacedPolygon->nVertices; i++ )
@@ -1986,15 +1993,17 @@ int CCW_B;
         }
     }
     //  Last, also checks if polygon overlap with segment crossing, without point inclusion.
-    //  Check if one segment of CUrPoly intersect with one segment of one of the fixed polys
+    //  Check if one segment of CurPoly intersect with one segment of one of the fixed polygons
     for (std::list<NSVGpath *>::iterator it=FixedPath.begin(); it != FixedPath.end(); ++it, PlacedPolygon++)
     {
         NSVGpath *path = *it;
         if ( path->isFixed )
+        {
             FixedBit = FIXED_BIT;
+            FixedVertex += path->LargePolygon->nVertices;
+        }
         else
             FixedBit = 0;
-        FixedVertex += path->LargePolygon->nVertices;
         if ( Cached != 0 && path->isFixed && Cached > FixedVertex) continue;       //  No need to reprocess fixed polygons already computed
         Polygon *fPoly = path->PlacedPolygon;
         nbIntersectPoly++;
@@ -2004,7 +2013,7 @@ int CCW_B;
     return 0;
 }
 
-//  Return the number of vertex of all fixed polygons
+//  Return the number of vertex of all polygons before this one in the "fixed" list.
 
 int SvgDoc::getFixedNbVertex(std::list<NSVGpath *> FixedList)
 {
@@ -2267,9 +2276,8 @@ Point RefPoint;
 
                     trans_rot_p = NULL;
                     int Cached = 0;
-                    if ( UseCache )
+                    if ( UseCache && path->isFixed )
                         WorkingFloatingEntry->CachePoly->isOKPlacedFreeRot(iVFloat, iRot, iFixedVertex, &trans_rot_p);
-//                    Cached = 0;
                     if ( Cached < 0 )       //  Cache says impossible !
                     {
                         CacheHit_KO++;
@@ -2293,7 +2301,8 @@ Point RefPoint;
                         if ( Res == 0)
                         {
                             //  Impossible, invalid cache entry
-                            if ( UseCache ) WorkingFloatingEntry->CachePoly->addOKPlacedFreeRot(iVFloat, iRot, iFixedVertex, NULL);
+                            if ( UseCache && path->isFixed )
+                                WorkingFloatingEntry->CachePoly->addOKPlacedFreeRot(iVFloat, iRot, iFixedVertex, NULL);
                             if ( debug_level > 2 )
                                 OutDebug << "ComputeFreeRotAngle: Placement polygon " << FloatPolygon << " vertex " << iVFloat << " with rotation " << angle << "(" << iRot << ")" << " on vertex " << iVFixed << " of Polygon " << FixedPolygon << " impossible " << *curFixed->GetVertex(iVFixed) << ", reason angle mismatch\n";
                             continue;    //  Not possible goto next without further processing

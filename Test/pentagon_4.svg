@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="1200mm"
+   height="800mm"
+   viewBox="0 0 1200 800.00006"
+   version="1.1"
+   id="svg6"
+   sodipodi:docname="pentagon_4.svg"
+   inkscape:version="1.2 (1:1.2+202206011326+fc4e4096c5)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs10" />
+  <sodipodi:namedview
+     id="namedview8"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:document-units="mm"
+     showgrid="false"
+     width="1200mm"
+     inkscape:zoom="0.15134542"
+     inkscape:cx="2173.8352"
+     inkscape:cy="1086.9176"
+     inkscape:window-width="1846"
+     inkscape:window-height="1016"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg6"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0"
+     inkscape:showpageshadow="2"
+     inkscape:deskcolor="#d1d1d1" />
+  <path
+     id="Penta_A"
+     d="m 162.00912,0.14158 -161.8034,117.55705 61.8034,190.2113 h 200 L 323.81252,117.69863 162.00912,0.14158"
+     stroke="#000000"
+     stroke-width="0.35 px"
+     style="fill:none;fill-opacity:1;fill-rule:evenodd;stroke-width:0.35;stroke-miterlimit:4;stroke-dasharray:none" />
+  <path
+     id="Penta_B"
+     d="m 537.71769,0.14158 -161.8034,117.55705 61.8034,190.2113 h 200 L 699.52109,117.69863 537.71769,0.14158"
+     stroke="#000000"
+     stroke-width="0.35 px"
+     style="fill:none;fill-opacity:1;fill-rule:evenodd;stroke-width:0.35;stroke-miterlimit:4;stroke-dasharray:none" />
+  <path
+     id="Penta_C"
+     d="m 924.0096,0.14158 -161.8034,117.55705 61.8034,190.2113 h 200 L 1085.813,117.69863 924.0096,0.14158"
+     stroke="#000000"
+     stroke-width="0.35 px"
+     style="fill:none;fill-opacity:1;fill-rule:evenodd;stroke-width:0.35;stroke-miterlimit:4;stroke-dasharray:none" />
+  <path
+     id="Penta_D"
+     d="m 924.0096,349.3918 -161.8034,117.55705 61.8034,190.2113 h 200 L 1085.813,466.94885 924.0096,349.3918"
+     stroke="#000000"
+     stroke-width="0.35 px"
+     style="fill:none;fill-opacity:1;fill-rule:evenodd;stroke-width:0.35;stroke-miterlimit:4;stroke-dasharray:none" />
+</svg>
