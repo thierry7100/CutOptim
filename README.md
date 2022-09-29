@@ -43,7 +43,7 @@ Then, once Visual Studio is started, you open the CutOptim project, then:
 - Then, under windows, it is better to use this program like extension inkscape, the command line hardly being used? ! To do this, copy the cutoptim.inx and CutOptm / x64 / Release / CutOptim.exe files to the inkscape extensions directory. This can be found via the Edit / Preferences / System command, but it is usually under C: \ USERS \\ Your user name\\ AppData \ Roaming / inkscape / extensions. Attention, to see this directory, you will have to validate the visualization of hidden files under the explorer of files, if it were not done.
 As in Linux, the next startup of inkscape you will have a Fablab / Laser Cutting Optimizer
 
-##Operation
+## Operation
 
 The input and output format of the files is the SVG format, available on many software programs. If you use inkscape, it is the native format, the program has been tested in this context. It should also work with files from other drawing software that generates SVG. If you have a problem tell me (thierry@fablab-lannion.org) <br>
 
@@ -57,7 +57,7 @@ Description of the process:
 - The "best" configuration is obtained when the size of the convex hull is minimal. Another mathematical term! The convex hull is the smallest convex form containing all points of all plotted polygons. Intuitively, this maximizes the free space on the sheet, which is the desired result. Be careful, it is not necessarily the smallest rectangle, the convex hull is not usually a rectangle!
 - To place the paths, the software is allowed to rotate the objects, unless you block this possibility. Depending on your needs (non-homogeneous material) you may have to limit rotations to 0 and 180 ° for example, or even to block any rotation (this will be the case for example with printed fabric).
 
-###Program options as inkscape extension
+### Program options as inkscape extension
 ![Options dialog box](CutOptim_optionsinkscape.png) 
 The program has many options detailed below:
 - Units: Always use mm, the program is not tested for other choices. Sorry for inches users, you will have to test this !
@@ -71,7 +71,7 @@ The program has many options detailed below:
 - Attach nested path to the bigger one :  In practice, we often deal with situations or related objects. For example, a plate with fixing holes. If this box is checked, the software checks if the path is included in another one, and if it is, it will not process it but link it to the larger path. Once it is placed, the same transformation (rotation / translation) will be applied to the "small" included object. Attention the software is not able to recover the space released in holes, you have to leave a little work anyway.
 - Debug file generation: If this box is checked, a debug file (Debug_CutOptim.txt) is created in the inkscape extension directory. This can be used to understand what happened when it goes wrong.
 
-###Comand line options
+### Comand line options
 
 The program has the following options which are listed when typing CutOptim -h from the command line. For the explanations, please refer to the previous chapter, the command line options are the same as when used as an inkscape extension.
 
@@ -102,11 +102,11 @@ Usage:
   -p, --firstpos                Position of largest object on the sheet
                                 
 
-##Next steps
+## Next steps
 
 The program could be improved, both in performance and optimization result. I will work loosely on both topics, but you want to contribute, you are welcome !
 
-##References
+## References
 As mentionned, this is a well known research topic, I have used to scientific papers when designing this software
 1. Waste minimization in irregular stock cutting published in 2014 by Doraid Dalalah, Samir Khrais and Khaled Bataineh. I have used this paper as the main input of this work.
 2. Jostle heuristics for the 2D-irregular shapes bin packing problems with free rotation published in 2018 by Ranga P. Abeysooriya, Julia A. Bennell and Antonio  Martinez-Sykora. 
