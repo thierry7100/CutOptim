@@ -16,7 +16,7 @@
 	</param>
 	<param name="distance" type="float" min="0.8" max="10.0" _gui-text="Min distance between objects">2.0</param>
 	<param name="max_length" type="float" min="0" max="1000" _gui-text="Max length of single segment">1000</param>
-	<param name="optimizing_level" type="float" min="1" max="10" _gui-text="Optimizing level">1</param>
+	<param name="optimizing_level" type="int" min="1" max="10" _gui-text="Optimizing level">1</param>
 	<param name="original" type="boolean" _gui-text="Keep original layer in output">false</param>
  	<param name="firstpos" type="enum" _gui-text="Select option for largest element placement: ">
 		<_item value="TL">Top Left</_item>
